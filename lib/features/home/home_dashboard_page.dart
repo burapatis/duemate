@@ -139,7 +139,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const SearchPage(),
+                      builder: (_) => SearchPage(items: _upcomingDocuments),
                     ),
                   );
                 },
