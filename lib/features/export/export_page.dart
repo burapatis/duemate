@@ -24,10 +24,17 @@ class _ExportPageState extends State<ExportPage> {
             'ส่งออกรายการ',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
+          const SizedBox(height: 4),
+          Text(
+            'เลือกชนิดไฟล์และขอบเขตข้อมูลก่อนสร้างไฟล์ตัวอย่าง',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 16),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -65,7 +72,7 @@ class _ExportPageState extends State<ExportPage> {
           const SizedBox(height: 12),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -105,17 +112,23 @@ class _ExportPageState extends State<ExportPage> {
             ),
           ),
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: () {
-              // v0.1.0 มีไว้ทดสอบ flow หน้าจอ ยังไม่สร้างไฟล์จริง
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('ฟีเจอร์ส่งออกไฟล์จะพัฒนาในเวอร์ชันถัดไป'),
-                ),
-              );
-            },
-            icon: const Icon(Icons.file_download_outlined),
-            label: const Text('สร้างไฟล์ตัวอย่าง'),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () {
+                // v0.1.0 มีไว้ทดสอบ flow หน้าจอ ยังไม่สร้างไฟล์จริง
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('ฟีเจอร์ส่งออกไฟล์จะพัฒนาในเวอร์ชันถัดไป'),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.file_download_outlined),
+              label: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Text('สร้างไฟล์ตัวอย่าง'),
+              ),
+            ),
           ),
           const SizedBox(height: 12),
           Text(

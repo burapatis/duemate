@@ -74,17 +74,37 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // ปุ่มเหล่านี้เป็น placeholder เพื่อให้ flow ใช้งานได้ก่อนใน v0.1.0
-          OutlinedButton.icon(
-            onPressed: () => _showComingSoon(context),
-            icon: const Icon(Icons.notifications_active_outlined),
-            label: const Text('ทดสอบแจ้งเตือน'),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => _showComingSoon(context),
-            icon: const Icon(Icons.info_outline),
-            label: const Text('เกี่ยวกับ DueMate'),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'เกี่ยวกับ DueMate',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'เวอร์ชัน 0.1.0 (MVP)',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  // ปุ่มเหล่านี้เป็น placeholder เพื่อให้ flow ใช้งานได้ก่อนใน v0.1.0
+                  OutlinedButton.icon(
+                    onPressed: () => _showComingSoon(context),
+                    icon: const Icon(Icons.notifications_active_outlined),
+                    label: const Text('ทดสอบแจ้งเตือน'),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => _showComingSoon(context),
+                    icon: const Icon(Icons.info_outline),
+                    label: const Text('เกี่ยวกับ DueMate'),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

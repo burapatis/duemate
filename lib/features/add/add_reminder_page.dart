@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../home/reminder_item.dart';
+import '../home/reminder_ui.dart';
 
 class AddReminderPage extends StatefulWidget {
   const AddReminderPage({super.key});
@@ -101,90 +102,132 @@ class _AddReminderPageState extends State<AddReminderPage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'ชื่อรายการ',
-                border: OutlineInputBorder(),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ข้อมูลหลัก',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _titleController,
+                      decoration: const InputDecoration(
+                        labelText: 'ชื่อรายการ',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'กรุณากรอกชื่อรายการ';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedCategory,
+                      decoration: const InputDecoration(
+                        labelText: 'หมวด',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: _categories
+                          .map((category) {
+                            return DropdownMenuItem(
+                              value: category,
+                              child: Row(
+                                children: [
+                                  Icon(ReminderUi.categoryIcon(category), size: 18),
+                                  const SizedBox(width: 8),
+                                  Text('${ReminderUi.categoryEmoji(category)} $category'),
+                                ],
+                              ),
+                            );
+                          })
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _selectedCategory = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _pickDueDate,
+                      icon: const Icon(Icons.calendar_today),
+                      label: Text(
+                        _dueDate == null
+                            ? 'เลือกวันครบกำหนด'
+                            : 'วันครบกำหนด: ${_formatDate(_dueDate!)}',
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'กรุณากรอกชื่อรายการ';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: _selectedCategory,
-              decoration: const InputDecoration(
-                labelText: 'หมวด',
-                border: OutlineInputBorder(),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ตั้งค่าเตือนล่วงหน้า',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    // เลือกได้หลายค่าเพื่อรองรับการแจ้งเตือนหลายช่วงเวลา
+                    ..._reminderOptions.map((days) {
+                      return CheckboxListTile(
+                        value: _selectedReminderDays.contains(days),
+                        contentPadding: EdgeInsets.zero,
+                        title: Text('$days วัน'),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        onChanged: (isChecked) {
+                          setState(() {
+                            if (isChecked ?? false) {
+                              _selectedReminderDays.add(days);
+                            } else {
+                              _selectedReminderDays.remove(days);
+                            }
+                          });
+                        },
+                      );
+                    }),
+                  ],
+                ),
               ),
-              items: _categories
-                  .map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    );
-                  })
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() {
-                  _selectedCategory = value;
-                });
-              },
             ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _pickDueDate,
-              icon: const Icon(Icons.calendar_today),
-              label: Text(
-                _dueDate == null
-                    ? 'เลือกวันครบกำหนด'
-                    : 'วันครบกำหนด: ${_formatDate(_dueDate!)}',
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'เตือนล่วงหน้า',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            // เลือกได้หลายค่าเพื่อรองรับการแจ้งเตือนหลายช่วงเวลา
-            ..._reminderOptions.map((days) {
-              return CheckboxListTile(
-                value: _selectedReminderDays.contains(days),
-                contentPadding: EdgeInsets.zero,
-                title: Text('$days วัน'),
-                controlAffinity: ListTileControlAffinity.leading,
-                onChanged: (isChecked) {
-                  setState(() {
-                    if (isChecked ?? false) {
-                      _selectedReminderDays.add(days);
-                    } else {
-                      _selectedReminderDays.remove(days);
-                    }
-                  });
-                },
-              );
-            }),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _noteController,
-              minLines: 3,
-              maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'หมายเหตุ',
-                border: OutlineInputBorder(),
-                alignLabelWithHint: true,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: TextFormField(
+                  controller: _noteController,
+                  minLines: 3,
+                  maxLines: 5,
+                  decoration: const InputDecoration(
+                    labelText: 'หมายเหตุ',
+                    border: OutlineInputBorder(),
+                    alignLabelWithHint: true,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 20),
-            FilledButton(
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
               onPressed: _saveSample,
-              child: const Text('บันทึก'),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Text('บันทึก'),
+                ),
+              ),
             ),
           ],
         ),

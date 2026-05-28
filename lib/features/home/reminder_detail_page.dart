@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'reminder_item.dart';
+import 'reminder_ui.dart';
 
 class ReminderDetailPage extends StatelessWidget {
   const ReminderDetailPage({super.key, required this.item});
@@ -40,6 +41,7 @@ class ReminderDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = _buildStatus(item.dueDate);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -48,29 +50,72 @@ class ReminderDetailPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _DetailCard(
-            label: 'ชื่อรายการ',
-            value: item.title,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: colorScheme.primaryContainer,
+                    foregroundColor: colorScheme.onPrimaryContainer,
+                    child: Icon(ReminderUi.categoryIcon(item.category)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.title,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${ReminderUi.categoryEmoji(item.category)} ${item.category}',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          _DetailCard(
-            label: 'หมวด',
-            value: item.category,
+          const SizedBox(height: 10),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('ข้อมูลกำหนดเวลา', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 10),
+                  _DetailRow(label: 'วันครบกำหนด', value: _formatDate(item.dueDate)),
+                  const SizedBox(height: 8),
+                  _DetailRow(
+                    label: 'เตือนล่วงหน้า',
+                    value: _buildReminderLabel(item.reminderDays),
+                  ),
+                  const SizedBox(height: 8),
+                  _DetailRow(label: 'สถานะ', value: status),
+                ],
+              ),
+            ),
           ),
-          _DetailCard(
-            label: 'วันครบกำหนด',
-            value: _formatDate(item.dueDate),
-          ),
-          _DetailCard(
-            label: 'เตือนล่วงหน้า',
-            value: _buildReminderLabel(item.reminderDays),
-          ),
-          _DetailCard(
-            label: 'หมายเหตุ',
-            value: item.note.isEmpty ? '-' : item.note,
-          ),
-          _DetailCard(
-            label: 'สถานะ',
-            value: status,
+          const SizedBox(height: 10),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('หมายเหตุ', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Text(item.note.isEmpty ? '-' : item.note),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -98,23 +143,24 @@ class ReminderDetailPage extends StatelessWidget {
   }
 }
 
-class _DetailCard extends StatelessWidget {
-  const _DetailCard({required this.label, required this.value});
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
 
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        title: Text(label),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(value),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 110,
+          child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
         ),
-      ),
+        const Text(': '),
+        Expanded(child: Text(value)),
+      ],
     );
   }
 }

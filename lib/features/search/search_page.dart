@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../home/reminder_detail_page.dart';
 import '../home/reminder_item.dart';
+import '../home/reminder_ui.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key, required this.items});
@@ -63,39 +64,47 @@ class _SearchPageState extends State<SearchPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: 'ค้นหาด้วยชื่อรายการ',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (_) => setState(() {}),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: DropdownButtonFormField<String>(
-              initialValue: _selectedCategory,
-              decoration: const InputDecoration(
-                labelText: 'กรองหมวด',
-                border: OutlineInputBorder(),
-              ),
-              items: _categories
-                  .map(
-                    (category) => DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        labelText: 'ค้นหาด้วยชื่อรายการ',
+                        hintText: 'เช่น ใบขับขี่, พ.ร.บ. รถยนต์',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (_) => setState(() {}),
                     ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() {
-                  _selectedCategory = value;
-                });
-              },
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedCategory,
+                      decoration: const InputDecoration(
+                        labelText: 'กรองหมวด',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: _categories
+                          .map(
+                            (category) => DropdownMenuItem(
+                              value: category,
+                              child: Text(category),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _selectedCategory = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           Expanded(
@@ -110,9 +119,16 @@ class _SearchPageState extends State<SearchPage> {
                       final item = results[index];
                       return Card(
                         child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 4,
+                          ),
+                          leading: CircleAvatar(
+                            child: Icon(ReminderUi.categoryIcon(item.category)),
+                          ),
                           title: Text(item.title),
                           subtitle: Text(
-                            '${item.category} • ${_formatDueLabel(item.dueDate)}',
+                            '${ReminderUi.categoryEmoji(item.category)} ${item.category} • ${_formatDueLabel(item.dueDate)}',
                           ),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {

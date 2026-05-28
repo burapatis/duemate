@@ -7,6 +7,7 @@ import '../settings/settings_page.dart';
 import 'mock_dashboard_data.dart';
 import 'reminder_detail_page.dart';
 import 'reminder_item.dart';
+import 'reminder_ui.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
@@ -89,12 +90,19 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'สรุปเอกสารและวันครบกำหนดของคุณ',
+            'ภาพรวมเอกสารสำคัญของคุณ',
             style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'เช็กวันครบกำหนดและจัดการรายการได้ในหน้าเดียว',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 16),
           _SummaryCards(summary: summary),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Text(
             'เอกสารใกล้ครบกำหนด',
             style: Theme.of(context).textTheme.titleLarge,
@@ -104,8 +112,19 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           ..._upcomingDocuments.map(
             (task) => Card(
               child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 4,
+                ),
+                leading: CircleAvatar(
+                  backgroundColor: colorScheme.primaryContainer,
+                  foregroundColor: colorScheme.onPrimaryContainer,
+                  child: Icon(ReminderUi.categoryIcon(task.category)),
+                ),
                 title: Text(task.title),
-                subtitle: Text(_formatDueLabel(task.dueDate)),
+                subtitle: Text(
+                  '${ReminderUi.categoryEmoji(task.category)} ${task.category} • ${_formatDueLabel(task.dueDate)}',
+                ),
                 trailing: _PriorityChip(label: task.priority),
                 onTap: () {
                   // ส่งข้อมูลรายการที่เลือกไปหน้า Detail ทั้งจาก mock และที่เพิ่มใหม่
@@ -126,49 +145,61 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
             ),
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              FilledButton.icon(
-                onPressed: _openAddReminder,
-                icon: const Icon(Icons.add),
-                label: const Text('+ เพิ่มรายการใหม่'),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _openAddReminder,
+              icon: const Icon(Icons.add_circle_outline),
+              label: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Text('+ เพิ่มรายการใหม่'),
               ),
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => SearchPage(items: _upcomingDocuments),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.search),
-                label: const Text('ค้นหา'),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => SearchPage(items: _upcomingDocuments),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.search),
+                    label: const Text('ค้นหา'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ExportPage(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.ios_share),
+                    label: const Text('ส่งออก'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsPage(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.settings),
+                    label: const Text('ตั้งค่า'),
+                  ),
+                ],
               ),
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ExportPage(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.ios_share),
-                label: const Text('ส่งออก'),
-              ),
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const SettingsPage(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.settings),
-                label: const Text('ตั้งค่า'),
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -222,7 +253,7 @@ class _SummaryCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
