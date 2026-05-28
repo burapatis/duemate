@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../add/add_reminder_page.dart';
+import '../export/export_page.dart';
+import '../search/search_page.dart';
+import '../settings/settings_page.dart';
 import 'mock_dashboard_data.dart';
 
 class HomeDashboardPage extends StatelessWidget {
@@ -45,6 +49,57 @@ class HomeDashboardPage extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AddReminderPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('+ เพิ่มรายการใหม่'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const SearchPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.search),
+                label: const Text('ค้นหา'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ExportPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.ios_share),
+                label: const Text('ส่งออก'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const SettingsPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.settings),
+                label: const Text('ตั้งค่า'),
+              ),
+            ],
           ),
         ],
       ),
