@@ -5,14 +5,79 @@ import '../export/export_page.dart';
 import '../search/search_page.dart';
 import '../settings/settings_page.dart';
 import 'mock_dashboard_data.dart';
+import 'reminder_item.dart';
 
-class HomeDashboardPage extends StatelessWidget {
+class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({super.key});
 
   @override
+  State<HomeDashboardPage> createState() => _HomeDashboardPageState();
+}
+
+class _HomeDashboardPageState extends State<HomeDashboardPage> {
+  late List<ReminderItem> _upcomingDocuments;
+
+  @override
+  void initState() {
+    super.initState();
+    _upcomingDocuments = List<ReminderItem>.from(
+      MockDashboardData.initialUpcomingDocuments,
+    );
+  }
+
+  Future<void> _openAddReminder() async {
+    final newItem = await Navigator.of(context).push<ReminderItem>(
+      MaterialPageRoute(
+        builder: (_) => const AddReminderPage(),
+      ),
+    );
+
+    if (newItem == null) return;
+
+    // เพิ่มรายการใหม่เข้า state ทันที (เก็บในหน่วยความจำเท่านั้นสำหรับ v0.1.0)
+    setState(() {
+      _upcomingDocuments = [newItem, ..._upcomingDocuments];
+    });
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('บันทึกตัวอย่างแล้ว — ขั้นนี้ยังไม่เก็บข้อมูลถาวร'),
+      ),
+    );
+  }
+
+  String _formatDueLabel(DateTime dueDate) {
+    final day = dueDate.day.toString().padLeft(2, '0');
+    final month = dueDate.month.toString().padLeft(2, '0');
+    final year = dueDate.year + 543;
+    return 'ครบกำหนด $day/$month/$year';
+  }
+
+  DashboardSummary _buildSummary(List<ReminderItem> items) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final dueToday = items.where((item) {
+      final due = DateTime(item.dueDate.year, item.dueDate.month, item.dueDate.day);
+      return due == today;
+    }).length;
+
+    final overdue = items.where((item) {
+      final due = DateTime(item.dueDate.year, item.dueDate.month, item.dueDate.day);
+      return due.isBefore(today);
+    }).length;
+
+    return DashboardSummary(
+      dueToday: dueToday,
+      overdue: overdue,
+      total: items.length,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final summary = MockDashboardData.summary;
-    final upcomingDocuments = MockDashboardData.upcomingDocuments;
+    final summary = _buildSummary(_upcomingDocuments);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -34,11 +99,12 @@ class HomeDashboardPage extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
-          ...upcomingDocuments.map(
+          // แสดงรายการจาก state ปัจจุบัน รวมรายการที่เพิ่งเพิ่มจากหน้า Add
+          ..._upcomingDocuments.map(
             (task) => Card(
               child: ListTile(
                 title: Text(task.title),
-                subtitle: Text(task.dueLabel),
+                subtitle: Text(_formatDueLabel(task.dueDate)),
                 trailing: _PriorityChip(label: task.priority),
               ),
             ),
@@ -56,13 +122,7 @@ class HomeDashboardPage extends StatelessWidget {
             runSpacing: 8,
             children: [
               FilledButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AddReminderPage(),
-                    ),
-                  );
-                },
+                onPressed: _openAddReminder,
                 icon: const Icon(Icons.add),
                 label: const Text('+ เพิ่มรายการใหม่'),
               ),

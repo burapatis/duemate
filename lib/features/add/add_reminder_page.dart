@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../home/reminder_item.dart';
+
 class AddReminderPage extends StatefulWidget {
   const AddReminderPage({super.key});
 
@@ -66,11 +68,19 @@ class _AddReminderPageState extends State<AddReminderPage> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('บันทึกตัวอย่างแล้ว — ขั้นนี้ยังไม่เก็บข้อมูลถาวร'),
-      ),
+    // ส่งค่ากลับหน้า Home เพื่ออัปเดตรายการแบบ in-memory ใน v0.1.0
+    final item = ReminderItem(
+      title: _titleController.text.trim(),
+      category: _selectedCategory,
+      dueDate: _dueDate!,
+      reminderDays: _selectedReminderDays.toList()..sort(),
+      note: _noteController.text.trim(),
+      priority: _selectedCategory == 'งาน/ราชการ' || _selectedCategory == 'รถ'
+          ? 'สูง'
+          : 'กลาง',
     );
+
+    Navigator.of(context).pop(item);
   }
 
   String _formatDate(DateTime date) {

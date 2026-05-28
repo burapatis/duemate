@@ -1,3 +1,5 @@
+import 'reminder_item.dart';
+
 class DashboardSummary {
   const DashboardSummary({
     required this.dueToday,
@@ -10,44 +12,44 @@ class DashboardSummary {
   final int total;
 }
 
-class UpcomingDocument {
-  const UpcomingDocument({
-    required this.title,
-    required this.dueLabel,
-    required this.priority,
-  });
-
-  final String title;
-  final String dueLabel;
-  final String priority;
-}
-
 class MockDashboardData {
-  static const summary = DashboardSummary(
+  static const initialSummary = DashboardSummary(
     dueToday: 1,
     overdue: 1,
     total: 4,
   );
 
-  static const upcomingDocuments = <UpcomingDocument>[
-    UpcomingDocument(
+  static final initialUpcomingDocuments = <ReminderItem>[
+    ReminderItem(
       title: 'พ.ร.บ. รถยนต์',
-      dueLabel: 'ครบกำหนด วันนี้ 18:00',
+      category: 'รถ',
+      dueDate: DateTime(2026, 5, 28),
+      reminderDays: [30, 7, 1],
+      note: 'ต่ออายุผ่านแอปบริษัทประกัน',
       priority: 'สูง',
     ),
-    UpcomingDocument(
+    ReminderItem(
       title: 'ใบขับขี่',
-      dueLabel: 'ครบกำหนด 15 มิ.ย. 2569',
+      category: 'ส่วนตัว',
+      dueDate: DateTime(2026, 6, 15),
+      reminderDays: [30, 7],
+      note: '',
       priority: 'กลาง',
     ),
-    UpcomingDocument(
+    ReminderItem(
       title: 'ประกันเครื่องซักผ้า',
-      dueLabel: 'ครบกำหนด 22 ก.ค. 2569',
+      category: 'สินค้า/รับประกัน',
+      dueDate: DateTime(2026, 7, 22),
+      reminderDays: [15, 1],
+      note: '',
       priority: 'ต่ำ',
     ),
-    UpcomingDocument(
+    ReminderItem(
       title: 'สัญญาเช่าบ้าน',
-      dueLabel: 'ครบกำหนด 30 ก.ย. 2569',
+      category: 'บ้าน',
+      dueDate: DateTime(2026, 9, 30),
+      reminderDays: [30, 15, 7],
+      note: 'คุยสัญญาฉบับใหม่ล่วงหน้า',
       priority: 'สูง',
     ),
   ];
