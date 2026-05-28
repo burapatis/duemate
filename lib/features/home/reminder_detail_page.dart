@@ -41,7 +41,6 @@ class ReminderDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = _buildStatus(item.dueDate);
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -55,13 +54,6 @@ class ReminderDetailPage extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: colorScheme.primaryContainer,
-                    foregroundColor: colorScheme.onPrimaryContainer,
-                    child: Icon(ReminderUi.categoryIcon(item.category)),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

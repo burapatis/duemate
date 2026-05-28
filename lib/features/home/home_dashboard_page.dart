@@ -116,11 +116,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                   horizontal: 14,
                   vertical: 4,
                 ),
-                leading: CircleAvatar(
-                  backgroundColor: colorScheme.primaryContainer,
-                  foregroundColor: colorScheme.onPrimaryContainer,
-                  child: Icon(ReminderUi.categoryIcon(task.category)),
-                ),
                 title: Text(task.title),
                 subtitle: Text(
                   '${ReminderUi.categoryEmoji(task.category)} ${task.category} • ${_formatDueLabel(task.dueDate)}',

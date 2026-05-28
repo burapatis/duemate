@@ -123,9 +123,6 @@ class _SearchPageState extends State<SearchPage> {
                             horizontal: 14,
                             vertical: 4,
                           ),
-                          leading: CircleAvatar(
-                            child: Icon(ReminderUi.categoryIcon(item.category)),
-                          ),
                           title: Text(item.title),
                           subtitle: Text(
                             '${ReminderUi.categoryEmoji(item.category)} ${item.category} • ${_formatDueLabel(item.dueDate)}',

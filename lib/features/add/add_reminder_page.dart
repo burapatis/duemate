@@ -137,13 +137,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
                           .map((category) {
                             return DropdownMenuItem(
                               value: category,
-                              child: Row(
-                                children: [
-                                  Icon(ReminderUi.categoryIcon(category), size: 18),
-                                  const SizedBox(width: 8),
-                                  Text('${ReminderUi.categoryEmoji(category)} $category'),
-                                ],
-                              ),
+                              child: Text('${ReminderUi.categoryEmoji(category)} $category'),
                             );
                           })
                           .toList(),
