@@ -1,17 +1,17 @@
 class DashboardSummary {
   const DashboardSummary({
-    required this.tasksToday,
-    required this.overdueTasks,
-    required this.completedTasks,
+    required this.dueToday,
+    required this.overdue,
+    required this.total,
   });
 
-  final int tasksToday;
-  final int overdueTasks;
-  final int completedTasks;
+  final int dueToday;
+  final int overdue;
+  final int total;
 }
 
-class UpcomingTask {
-  const UpcomingTask({
+class UpcomingDocument {
+  const UpcomingDocument({
     required this.title,
     required this.dueLabel,
     required this.priority,
@@ -24,25 +24,30 @@ class UpcomingTask {
 
 class MockDashboardData {
   static const summary = DashboardSummary(
-    tasksToday: 5,
-    overdueTasks: 1,
-    completedTasks: 12,
+    dueToday: 1,
+    overdue: 1,
+    total: 4,
   );
 
-  static const upcomingTasks = <UpcomingTask>[
-    UpcomingTask(
-      title: 'ส่งรายงานสรุปงานประจำสัปดาห์',
+  static const upcomingDocuments = <UpcomingDocument>[
+    UpcomingDocument(
+      title: 'พ.ร.บ. รถยนต์',
       dueLabel: 'ครบกำหนด วันนี้ 18:00',
       priority: 'สูง',
     ),
-    UpcomingTask(
-      title: 'ชำระค่าน้ำประปา',
-      dueLabel: 'ครบกำหนด พรุ่งนี้ 09:00',
+    UpcomingDocument(
+      title: 'ใบขับขี่',
+      dueLabel: 'ครบกำหนด 15 มิ.ย. 2569',
       priority: 'กลาง',
     ),
-    UpcomingTask(
-      title: 'นัดคุยแผนโปรเจกต์กับทีม',
-      dueLabel: 'ครบกำหนด ศุกร์ 14:30',
+    UpcomingDocument(
+      title: 'ประกันเครื่องซักผ้า',
+      dueLabel: 'ครบกำหนด 22 ก.ค. 2569',
+      priority: 'ต่ำ',
+    ),
+    UpcomingDocument(
+      title: 'สัญญาเช่าบ้าน',
+      dueLabel: 'ครบกำหนด 30 ก.ย. 2569',
       priority: 'สูง',
     ),
   ];

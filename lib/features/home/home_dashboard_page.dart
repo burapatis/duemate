@@ -8,7 +8,7 @@ class HomeDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final summary = MockDashboardData.summary;
-    final upcomingTasks = MockDashboardData.upcomingTasks;
+    final upcomingDocuments = MockDashboardData.upcomingDocuments;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -19,18 +19,18 @@ class HomeDashboardPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'สวัสดี! วันนี้มีอะไรต้องทำบ้าง',
+            'สรุปเอกสารและวันครบกำหนดของคุณ',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 16),
           _SummaryCards(summary: summary),
           const SizedBox(height: 20),
           Text(
-            'งานใกล้ครบกำหนด',
+            'เอกสารใกล้ครบกำหนด',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
-          ...upcomingTasks.map(
+          ...upcomingDocuments.map(
             (task) => Card(
               child: ListTile(
                 title: Text(task.title),
@@ -63,22 +63,22 @@ class _SummaryCards extends StatelessWidget {
       children: [
         Expanded(
           child: _SummaryCard(
-            label: 'งานวันนี้',
-            value: summary.tasksToday.toString(),
+            label: 'วันนี้',
+            value: summary.dueToday.toString(),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: _SummaryCard(
-            label: 'เลยกำหนด',
-            value: summary.overdueTasks.toString(),
+            label: 'เกินกำหนด',
+            value: summary.overdue.toString(),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: _SummaryCard(
-            label: 'เสร็จแล้ว',
-            value: summary.completedTasks.toString(),
+            label: 'ทั้งหมด',
+            value: summary.total.toString(),
           ),
         ),
       ],
