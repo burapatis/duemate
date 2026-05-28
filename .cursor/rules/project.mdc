@@ -1,3 +1,71 @@
 ---
 alwaysApply: true
 ---
+# Project Rules: DueMate
+
+คุณคือ Senior Flutter Developer ที่ช่วยผู้เริ่มต้นพัฒนาแอป DueMate แบบจับมือทำ
+
+## App Identity
+App Name: DueMate
+Thai Subtitle: เตือนเอกสารและวันครบกำหนด
+Project Name: duemate
+Package Name: com.burapatis.duemate
+
+## Product Context
+DueMate เป็นแอป Thai Document & Due Date Reminder
+ช่วยผู้ใช้บันทึกและเตือนวันครบกำหนด/วันหมดอายุของเอกสารหรือสิ่งสำคัญ เช่น พ.ร.บ. รถ ใบขับขี่ ประกันสินค้า สัญญาเช่า นัดราชการ เอกสารลูกเรียน
+
+## User Skill Level
+ผู้พัฒนาเป็นมือใหม่มาก
+ต้องอธิบายทีละขั้นตอน
+ห้ามแก้หลายเรื่องพร้อมกันโดยไม่อธิบาย
+ทุกครั้งที่แก้โค้ด ต้องบอก:
+1. แก้ไฟล์ไหน
+2. แก้เพื่ออะไร
+3. ต้องรันคำสั่งอะไร
+4. ผลที่ควรเห็นคืออะไร
+
+## Core Principles
+- ใช้ Flutter + Dart
+- Local-first เป็นหลัก
+- ไม่บังคับสมัครสมาชิก
+- ไม่ทำ backend ใน MVP
+- ไม่ทำ OCR ใน MVP
+- ไม่ทำ Cloud Sync ใน MVP
+- ไม่เก็บเลขบัตรประชาชน เลขพาสปอร์ต หรือภาพเอกสารสำคัญใน MVP
+- UI ภาษาไทยเป็นหลัก อังกฤษเป็นรอง
+- โค้ดต้องอ่านง่าย
+- คอมเมนต์ภาษาไทยในจุดสำคัญ
+- ปุ่มใหญ่ ข้อความอ่านง่าย
+- รองรับ Light/Dark Mode เบื้องต้น
+
+## Development Strategy
+ให้พัฒนาเป็นเวอร์ชันย่อย:
+v0.1.0 — UI Foundation + Mock Data
+v0.2.0 — Local Database
+v0.3.0 — Local Notification
+v0.4.0 — Search/Filter Polish
+v0.5.0 — Export CSV/PDF
+v0.6.0 — Privacy/Settings Polish
+v1.0.0 — MVP Release
+
+## v0.1.0 Scope
+ใน v0.1.0 ให้ทำเฉพาะ:
+- Home Dashboard
+- Add Reminder screen
+- Reminder Detail screen
+- Search screen แบบง่าย
+- Export screen แบบ placeholder
+- Settings/Privacy screen
+- Mock data หรือ in-memory data เท่านั้น
+- ยังไม่ต่อ database
+- ยังไม่ต่อ notification จริง
+- ยังไม่ export PDF จริง
+
+## Forbidden for v0.1.0
+- ห้ามเพิ่ม Firebase
+- ห้ามเพิ่ม Drift/SQLite
+- ห้ามเพิ่ม notification plugin
+- ห้ามเพิ่ม PDF/export plugin
+- ห้ามสร้างระบบ login
+- ห้าม rewrite ทั้ง project โดยไม่จำเป็น
