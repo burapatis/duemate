@@ -104,7 +104,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           _SummaryCards(summary: summary),
           const SizedBox(height: 24),
           Text(
-            'เอกสารใกล้ครบกำหนด',
+            '🗂️ เอกสารใกล้ครบกำหนด',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
@@ -147,7 +147,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
               icon: const Icon(Icons.add_circle_outline),
               label: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10),
-                child: Text('+ เพิ่มรายการใหม่'),
+                child: Text('เพิ่มรายการใหม่'),
               ),
             ),
           ),

@@ -95,7 +95,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('เพิ่มรายการ'),
+        title: const Text('➕ เพิ่มรายการ'),
       ),
       body: Form(
         key: _formKey,

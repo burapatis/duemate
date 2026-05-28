@@ -59,7 +59,7 @@ class _SearchPageState extends State<SearchPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ค้นหา'),
+        title: const Text('🔎 ค้นหาเอกสาร'),
       ),
       body: Column(
         children: [

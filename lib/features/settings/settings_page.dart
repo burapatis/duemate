@@ -13,7 +13,7 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ตั้งค่าและความเป็นส่วนตัว'),
+        title: const Text('⚙️ ตั้งค่าและความเป็นส่วนตัว'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -25,7 +25,7 @@ class SettingsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ความเป็นส่วนตัว',
+                    '🔒 ความเป็นส่วนตัว',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
@@ -50,7 +50,7 @@ class SettingsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ข้อจำกัดของ v0.1.0',
+                    '⚠️ ข้อจำกัดของ v0.1.0',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),

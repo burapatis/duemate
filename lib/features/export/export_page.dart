@@ -15,13 +15,13 @@ class _ExportPageState extends State<ExportPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ส่งออก'),
+        title: const Text('📤 ส่งออก'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'ส่งออกรายการ',
+            '📤 ส่งออกรายการ',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 4),
