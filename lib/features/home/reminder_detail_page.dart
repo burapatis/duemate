@@ -44,14 +44,14 @@ class ReminderDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('รายละเอียดรายการ'),
+        title: const Text('📄 รายละเอียดรายการ'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(ReminderUi.pagePadding),
         children: [
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
               child: Row(
                 children: [
                   Expanded(
@@ -64,7 +64,7 @@ class ReminderDetailPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${ReminderUi.categoryEmoji(item.category)} ${item.category}',
+                          ReminderUi.categoryLabel(item.category),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
@@ -74,14 +74,17 @@ class ReminderDetailPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: ReminderUi.sectionGap),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ข้อมูลกำหนดเวลา', style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    '📅 ข้อมูลกำหนดเวลา',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 10),
                   _DetailRow(label: 'วันครบกำหนด', value: _formatDate(item.dueDate)),
                   const SizedBox(height: 8),
@@ -95,14 +98,17 @@ class ReminderDetailPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: ReminderUi.sectionGap),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('หมายเหตุ', style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    '📌 หมายเหตุ',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 8),
                   Text(item.note.isEmpty ? '-' : item.note),
                 ],
@@ -143,16 +149,25 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 110,
-          child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
-        ),
-        const Text(': '),
-        Expanded(child: Text(value)),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(
+            flex: 2,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+          const Text(': '),
+          Flexible(
+            flex: 3,
+            child: Text(value),
+          ),
+        ],
+      ),
     );
   }
 }

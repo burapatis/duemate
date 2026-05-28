@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../home/reminder_ui.dart';
+
 class ExportPage extends StatefulWidget {
   const ExportPage({super.key});
 
@@ -15,10 +17,10 @@ class _ExportPageState extends State<ExportPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('📤 ส่งออก'),
+        title: const Text('ส่งออก'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(ReminderUi.pagePadding),
         children: [
           Text(
             '📤 ส่งออกรายการ',
@@ -31,10 +33,10 @@ class _ExportPageState extends State<ExportPage> {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: ReminderUi.blockGap),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -69,10 +71,10 @@ class _ExportPageState extends State<ExportPage> {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: ReminderUi.sectionGap),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -111,7 +113,7 @@ class _ExportPageState extends State<ExportPage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: ReminderUi.blockGap),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(

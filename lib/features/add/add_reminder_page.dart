@@ -100,16 +100,16 @@ class _AddReminderPageState extends State<AddReminderPage> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(ReminderUi.pagePadding),
           children: [
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(ReminderUi.cardPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'ข้อมูลหลัก',
+                      '📝 ข้อมูลหลัก',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 12),
@@ -137,7 +137,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
                           .map((category) {
                             return DropdownMenuItem(
                               value: category,
-                              child: Text('${ReminderUi.categoryEmoji(category)} $category'),
+                              child: Text(ReminderUi.categoryLabel(category)),
                             );
                           })
                           .toList(),
@@ -162,15 +162,15 @@ class _AddReminderPageState extends State<AddReminderPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: ReminderUi.sectionGap),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(ReminderUi.cardPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'ตั้งค่าเตือนล่วงหน้า',
+                      '🔔 ตั้งค่าเตือนล่วงหน้า',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -196,27 +196,37 @@ class _AddReminderPageState extends State<AddReminderPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: ReminderUi.sectionGap),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: TextFormField(
-                  controller: _noteController,
-                  minLines: 3,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    labelText: 'หมายเหตุ',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
+                padding: const EdgeInsets.all(ReminderUi.cardPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '📌 หมายเหตุ',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: ReminderUi.sectionGap),
+                    TextFormField(
+                      controller: _noteController,
+                      minLines: 3,
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                        labelText: 'รายละเอียดเพิ่มเติม (ถ้ามี)',
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: ReminderUi.blockGap),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-              onPressed: _saveSample,
+                onPressed: _saveSample,
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 10),
                   child: Text('บันทึก'),

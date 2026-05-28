@@ -87,10 +87,10 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         title: const Text('DueMate'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(ReminderUi.pagePadding),
         children: [
           Text(
-            'ภาพรวมเอกสารสำคัญของคุณ',
+            '📋 ภาพรวมเอกสารสำคัญของคุณ',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 4),
@@ -100,9 +100,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
               color: colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: ReminderUi.blockGap),
           _SummaryCards(summary: summary),
-          const SizedBox(height: 24),
+          const SizedBox(height: ReminderUi.blockGap),
           Text(
             '🗂️ เอกสารใกล้ครบกำหนด',
             style: Theme.of(context).textTheme.titleLarge,
@@ -111,6 +111,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           // แสดงรายการจาก state ปัจจุบัน รวมรายการที่เพิ่งเพิ่มจากหน้า Add
           ..._upcomingDocuments.map(
             (task) => Card(
+              margin: const EdgeInsets.only(bottom: ReminderUi.sectionGap),
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -118,7 +119,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                 ),
                 title: Text(task.title),
                 subtitle: Text(
-                  '${ReminderUi.categoryEmoji(task.category)} ${task.category} • ${_formatDueLabel(task.dueDate)}',
+                  '${ReminderUi.categoryLabel(task.category)} • ${_formatDueLabel(task.dueDate)}',
                 ),
                 trailing: _PriorityChip(label: task.priority),
                 onTap: () {
@@ -139,7 +140,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
               color: colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: ReminderUi.blockGap),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -151,15 +152,16 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: ReminderUi.sectionGap),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
               child: Wrap(
                 spacing: 8,
                 runSpacing: 8,
+                alignment: WrapAlignment.center,
                 children: [
-                  OutlinedButton.icon(
+                  OutlinedButton(
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -167,10 +169,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.search),
-                    label: const Text('ค้นหา'),
+                    child: const Text('🔎 ค้นหา'),
                   ),
-                  OutlinedButton.icon(
+                  OutlinedButton(
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -178,10 +179,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.ios_share),
-                    label: const Text('ส่งออก'),
+                    child: const Text('📤 ส่งออก'),
                   ),
-                  OutlinedButton.icon(
+                  OutlinedButton(
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -189,8 +189,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.settings),
-                    label: const Text('ตั้งค่า'),
+                    child: const Text('⚙️ ตั้งค่า'),
                   ),
                 ],
               ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../home/reminder_ui.dart';
+
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
@@ -16,11 +18,11 @@ class SettingsPage extends StatelessWidget {
         title: const Text('⚙️ ตั้งค่าและความเป็นส่วนตัว'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(ReminderUi.pagePadding),
         children: [
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -42,10 +44,10 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: ReminderUi.sectionGap),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -63,25 +65,35 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: ReminderUi.sectionGap),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Text(
-                'DueMate เป็นเครื่องมือช่วยบันทึกและเตือนตามข้อมูลที่ผู้ใช้กรอกเอง ไม่ใช่บริการทางกฎหมาย การเงิน ราชการ หรือประกันภัย',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'เกี่ยวกับ DueMate',
+                    '📋 ข้อจำกัดความรับผิด',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: ReminderUi.sectionGap),
+                  Text(
+                    'DueMate เป็นเครื่องมือช่วยบันทึกและเตือนตามข้อมูลที่ผู้ใช้กรอกเอง ไม่ใช่บริการทางกฎหมาย การเงิน ราชการ หรือประกันภัย',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: ReminderUi.sectionGap),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ℹ️ เกี่ยวกับ DueMate',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
@@ -91,16 +103,14 @@ class SettingsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   // ปุ่มเหล่านี้เป็น placeholder เพื่อให้ flow ใช้งานได้ก่อนใน v0.1.0
-                  OutlinedButton.icon(
+                  OutlinedButton(
                     onPressed: () => _showComingSoon(context),
-                    icon: const Icon(Icons.notifications_active_outlined),
-                    label: const Text('ทดสอบแจ้งเตือน'),
+                    child: const Text('ทดสอบแจ้งเตือน'),
                   ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
+                  const SizedBox(height: ReminderUi.sectionGap),
+                  OutlinedButton(
                     onPressed: () => _showComingSoon(context),
-                    icon: const Icon(Icons.info_outline),
-                    label: const Text('เกี่ยวกับ DueMate'),
+                    child: const Text('ดูข้อมูลแอปเพิ่มเติม'),
                   ),
                 ],
               ),

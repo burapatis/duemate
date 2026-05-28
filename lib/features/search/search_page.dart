@@ -64,10 +64,15 @@ class _SearchPageState extends State<SearchPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+            padding: const EdgeInsets.fromLTRB(
+              ReminderUi.pagePadding,
+              ReminderUi.pagePadding,
+              ReminderUi.pagePadding,
+              ReminderUi.sectionGap,
+            ),
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(ReminderUi.cardPadding),
                 child: Column(
                   children: [
                     TextField(
@@ -91,7 +96,7 @@ class _SearchPageState extends State<SearchPage> {
                           .map(
                             (category) => DropdownMenuItem(
                               value: category,
-                              child: Text(category),
+                              child: Text(ReminderUi.filterCategoryLabel(category)),
                             ),
                           )
                           .toList(),
@@ -113,11 +118,17 @@ class _SearchPageState extends State<SearchPage> {
                     child: Text('ไม่พบรายการที่ตรงกับการค้นหา'),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(
+                      ReminderUi.pagePadding,
+                      4,
+                      ReminderUi.pagePadding,
+                      ReminderUi.pagePadding,
+                    ),
                     itemCount: results.length,
                     itemBuilder: (context, index) {
                       final item = results[index];
                       return Card(
+                        margin: const EdgeInsets.only(bottom: ReminderUi.sectionGap),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 14,
@@ -125,7 +136,7 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                           title: Text(item.title),
                           subtitle: Text(
-                            '${ReminderUi.categoryEmoji(item.category)} ${item.category} • ${_formatDueLabel(item.dueDate)}',
+                            '${ReminderUi.categoryLabel(item.category)} • ${_formatDueLabel(item.dueDate)}',
                           ),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
