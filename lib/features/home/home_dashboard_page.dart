@@ -5,6 +5,7 @@ import '../export/export_page.dart';
 import '../search/search_page.dart';
 import '../settings/settings_page.dart';
 import 'mock_dashboard_data.dart';
+import 'reminder_detail_page.dart';
 import 'reminder_item.dart';
 
 class HomeDashboardPage extends StatefulWidget {
@@ -106,6 +107,14 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                 title: Text(task.title),
                 subtitle: Text(_formatDueLabel(task.dueDate)),
                 trailing: _PriorityChip(label: task.priority),
+                onTap: () {
+                  // ส่งข้อมูลรายการที่เลือกไปหน้า Detail ทั้งจาก mock และที่เพิ่มใหม่
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ReminderDetailPage(item: task),
+                    ),
+                  );
+                },
               ),
             ),
           ),
