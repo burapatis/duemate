@@ -2,8 +2,23 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../features/home/reminder_item.dart';
+
+/// ผลการตั้งแจ้งเตือนตาม reminderDays ของรายการ
+enum ScheduleRemindersResult {
+  /// ตั้งได้ครบทุกวันที่ลอง schedule
+  success,
+
+  /// ไม่มี reminderDays หรือวันที่คำนวณได้ทั้งหมดอยู่ในอดีต
+  noSchedulableDates,
+
+  /// มีวันที่ควรตั้งได้ แต่บางรายการล้มเหลวหรือระบบไม่พร้อม
+  partialFailure,
+}
+
 /// จัดการ local notifications กลางของแอป DueMate
 class NotificationService {
+  static const _defaultReminderHour = 9;
   static const _testNotificationId = 1;
   static const _androidChannelId = 'duemate_general';
   static const _androidChannelName = 'DueMate';
@@ -124,7 +139,85 @@ class NotificationService {
     }
   }
 
-  /// ตั้งแจ้งเตือนตามวันเวลา — ยังไม่ผูกกับ dueDate/reminderDays ในรอบนี้ — คืน true ถ้าสำเร็จ
+  /// สร้าง notification id ที่ไม่ซ้ำระหว่างรายการและจำนวนวันเตือนล่วงหน้า
+  static int notificationIdFor(String itemId, int reminderDay) {
+    return Object.hash(itemId, reminderDay).abs();
+  }
+
+  /// คำนวณวันเวลาแจ้งเตือน: dueDate − reminderDay ที่ 09:00 น.
+  DateTime _scheduledAt(DateTime dueDate, int reminderDay) {
+    final dueDay = DateTime(dueDate.year, dueDate.month, dueDate.day);
+    final reminderDayDate = dueDay.subtract(Duration(days: reminderDay));
+    return DateTime(
+      reminderDayDate.year,
+      reminderDayDate.month,
+      reminderDayDate.day,
+      _defaultReminderHour,
+    );
+  }
+
+  /// ตั้งแจ้งเตือนตาม dueDate และ reminderDays ของรายการ
+  Future<ScheduleRemindersResult> scheduleRemindersForItem(
+    ReminderItem item,
+  ) async {
+    if (item.reminderDays.isEmpty) {
+      return ScheduleRemindersResult.noSchedulableDates;
+    }
+
+    try {
+      final initialized = await initialize();
+      if (!initialized) {
+        return _hasAnyFutureScheduleDate(item)
+            ? ScheduleRemindersResult.partialFailure
+            : ScheduleRemindersResult.noSchedulableDates;
+      }
+
+      await requestPermissions();
+
+      var attempted = 0;
+      var succeeded = 0;
+
+      for (final reminderDay in item.reminderDays) {
+        final scheduledDate = _scheduledAt(item.dueDate, reminderDay);
+
+        // วันเวลาผ่านแล้ว — ข้าม
+        if (scheduledDate.isBefore(DateTime.now())) {
+          continue;
+        }
+
+        attempted++;
+        final ok = await scheduleReminderNotification(
+          id: notificationIdFor(item.id, reminderDay),
+          title: 'DueMate',
+          body: 'ใกล้ถึงกำหนด: ${item.title}',
+          scheduledDate: scheduledDate,
+        );
+        if (ok) succeeded++;
+      }
+
+      if (attempted == 0) {
+        return ScheduleRemindersResult.noSchedulableDates;
+      }
+      if (succeeded == attempted) {
+        return ScheduleRemindersResult.success;
+      }
+      return ScheduleRemindersResult.partialFailure;
+    } catch (_) {
+      return ScheduleRemindersResult.partialFailure;
+    }
+  }
+
+  bool _hasAnyFutureScheduleDate(ReminderItem item) {
+    final now = DateTime.now();
+    for (final reminderDay in item.reminderDays) {
+      if (!_scheduledAt(item.dueDate, reminderDay).isBefore(now)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// ตั้งแจ้งเตือนตามวันเวลา — คืน true ถ้าสำเร็จ
   Future<bool> scheduleReminderNotification({
     required int id,
     required String title,

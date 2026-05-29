@@ -94,25 +94,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     }
   }
 
-  /// ตั้งแจ้งเตือนทดสอบ 1 นาทีหลังบันทึกรายการใหม่
-  Future<bool> _scheduleTestNotificationAfterSave(ReminderItem item) async {
-    try {
-      final initialized = await _notificationService.initialize();
-      if (!initialized) return false;
-
-      await _notificationService.requestPermissions();
-
-      return await _notificationService.scheduleReminderNotification(
-        id: item.id.hashCode.abs(),
-        title: 'DueMate',
-        body: 'อย่าลืมตรวจสอบรายการ: ${item.title}',
-        scheduledDate: DateTime.now().add(const Duration(minutes: 1)),
-      );
-    } catch (_) {
-      return false;
-    }
-  }
-
   Future<void> _openAddReminder() async {
     final newItem = await Navigator.of(context).push<ReminderItem>(
       MaterialPageRoute(
@@ -131,16 +112,25 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
     if (!mounted) return;
 
-    final scheduled = await _scheduleTestNotificationAfterSave(newItem);
+    ScheduleRemindersResult scheduleResult;
+    try {
+      scheduleResult =
+          await _notificationService.scheduleRemindersForItem(newItem);
+    } catch (_) {
+      scheduleResult = ScheduleRemindersResult.partialFailure;
+    }
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          scheduled
-              ? 'บันทึกรายการแล้ว และตั้งแจ้งเตือนทดสอบใน 1 นาที'
-              : 'บันทึกรายการแล้ว แต่ยังตั้งแจ้งเตือนทดสอบไม่สำเร็จ',
-        ),
+        content: Text(switch (scheduleResult) {
+          ScheduleRemindersResult.success =>
+            'บันทึกรายการแล้ว และตั้งแจ้งเตือนตามวันที่เลือกแล้ว',
+          ScheduleRemindersResult.noSchedulableDates =>
+            'บันทึกรายการแล้ว แต่ยังไม่มีวันที่แจ้งเตือนที่ตั้งได้',
+          ScheduleRemindersResult.partialFailure =>
+            'บันทึกรายการแล้ว แต่ตั้งแจ้งเตือนบางรายการไม่สำเร็จ',
+        }),
       ),
     );
   }
