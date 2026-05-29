@@ -12,9 +12,9 @@ class NotificationService {
 
   bool _initialized = false;
 
-  /// ตั้งค่า plugin เบื้องต้นสำหรับ Android / iOS / macOS
-  Future<void> initialize() async {
-    if (_initialized) return;
+  /// ตั้งค่า plugin เบื้องต้นสำหรับ Android / iOS / macOS — คืน true ถ้าพร้อมใช้งาน
+  Future<bool> initialize() async {
+    if (_initialized) return true;
 
     try {
       const androidSettings = AndroidInitializationSettings(
@@ -36,8 +36,10 @@ class NotificationService {
 
       await _plugin.initialize(settings: initSettings);
       _initialized = true;
+      return true;
     } catch (_) {
       // notification ใช้ไม่ได้บน platform นี้ — ไม่ให้แอป crash
+      return false;
     }
   }
 
@@ -71,11 +73,12 @@ class NotificationService {
     }
   }
 
-  /// แสดง notification ทดสอบ (ยังไม่เชื่อมกับรายการจริง)
-  Future<void> showTestNotification() async {
+  /// แสดง notification ทดสอบ (ยังไม่เชื่อมกับรายการจริง) — คืน true ถ้าแสดงได้
+  Future<bool> showTestNotification() async {
     try {
       if (!_initialized) {
-        await initialize();
+        final ready = await initialize();
+        if (!ready) return false;
       }
 
       const androidDetails = AndroidNotificationDetails(
@@ -100,8 +103,10 @@ class NotificationService {
         body: 'นี่คือการทดสอบแจ้งเตือน',
         notificationDetails: notificationDetails,
       );
+      return true;
     } catch (_) {
       // แสดงไม่ได้ — ไม่ให้แอป crash
+      return false;
     }
   }
 }

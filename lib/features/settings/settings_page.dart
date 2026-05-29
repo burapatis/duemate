@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/local_reminder_storage.dart';
+import '../../services/notification_service.dart';
 import '../home/reminder_ui.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -12,11 +13,39 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final _storage = LocalReminderStorage();
+  final _notificationService = NotificationService();
 
   void _showComingSoon() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('จะพัฒนาในเวอร์ชันถัดไป')),
     );
+  }
+
+  /// ทดสอบส่ง local notification ผ่าน NotificationService
+  Future<void> _testNotification() async {
+    try {
+      final initialized = await _notificationService.initialize();
+      if (!initialized) {
+        throw StateError('initialize failed');
+      }
+
+      await _notificationService.requestPermissions();
+
+      final shown = await _notificationService.showTestNotification();
+      if (!shown) {
+        throw StateError('show failed');
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ส่งแจ้งเตือนทดสอบแล้ว')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ไม่สามารถส่งแจ้งเตือนทดสอบได้')),
+      );
+    }
   }
 
   Future<void> _confirmClearTestData() async {
@@ -178,7 +207,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton(
-                    onPressed: _showComingSoon,
+                    onPressed: _testNotification,
                     child: const Text('ทดสอบแจ้งเตือน'),
                   ),
                   const SizedBox(height: ReminderUi.sectionGap),
