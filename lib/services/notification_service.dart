@@ -3,6 +3,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../features/home/reminder_item.dart';
+import 'reminder_notification_id.dart';
 
 /// ผลการตั้งแจ้งเตือนตาม reminderDays ของรายการ
 enum ScheduleRemindersResult {
@@ -139,11 +140,6 @@ class NotificationService {
     }
   }
 
-  /// สร้าง notification id ที่ไม่ซ้ำระหว่างรายการและจำนวนวันเตือนล่วงหน้า
-  static int notificationIdFor(String itemId, int reminderDay) {
-    return Object.hash(itemId, reminderDay).abs();
-  }
-
   /// คำนวณวันเวลาแจ้งเตือน: dueDate − reminderDay ที่ 09:00 น.
   DateTime _scheduledAt(DateTime dueDate, int reminderDay) {
     final dueDay = DateTime(dueDate.year, dueDate.month, dueDate.day);
@@ -187,7 +183,7 @@ class NotificationService {
 
         attempted++;
         final ok = await scheduleReminderNotification(
-          id: notificationIdFor(item.id, reminderDay),
+          id: reminderNotificationId(item.id, reminderDay),
           title: 'DueMate',
           body: 'ใกล้ถึงกำหนด: ${item.title}',
           scheduledDate: scheduledDate,
