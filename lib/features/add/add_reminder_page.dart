@@ -119,11 +119,16 @@ class _AddReminderPageState extends State<AddReminderPage> {
       appBar: AppBar(
         title: Text(_isEditing ? '✏️ แก้ไขรายการ' : '➕ เพิ่มรายการ'),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(ReminderUi.pagePadding),
-          children: [
+      body: GestureDetector(
+        // แตะพื้นที่ว่างเพื่อปิด keyboard — deferToChild ไม่แย่ง tap จาก TextField
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        behavior: HitTestBehavior.deferToChild,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.all(ReminderUi.pagePadding),
+            children: [
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(ReminderUi.cardPadding),
@@ -136,6 +141,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
+                      key: const ValueKey('reminder_title_field'),
                       controller: _titleController,
                       decoration: const InputDecoration(
                         labelText: 'ชื่อรายการ',
@@ -150,6 +156,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
+                      key: const ValueKey('reminder_category_field'),
                       initialValue: _selectedCategory,
                       decoration: const InputDecoration(
                         labelText: 'หมวด',
@@ -231,6 +238,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
                     ),
                     const SizedBox(height: ReminderUi.sectionGap),
                     TextFormField(
+                      key: const ValueKey('reminder_note_field'),
                       controller: _noteController,
                       minLines: 3,
                       maxLines: 5,
@@ -257,6 +265,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -285,13 +285,18 @@ class NotificationService {
     }
   }
 
-  /// ยกเลิกแจ้งเตือนที่แสดงอยู่ทั้งหมด
-  Future<void> cancelAllNotifications() async {
+  /// ยกเลิกแจ้งเตือนที่แสดงอยู่และที่ schedule ค้างอยู่ทั้งหมด — คืน true ถ้าสำเร็จ
+  Future<bool> cancelAllNotifications() async {
     try {
-      await _ensureReady();
+      final ready = await _ensureReady();
+      if (!ready) return false;
+
+      await _plugin.cancelAllPendingNotifications();
       await _plugin.cancelAll();
+      return true;
     } catch (_) {
       // ยกเลิกไม่ได้ — ไม่ throw ต่อ
+      return false;
     }
   }
 }

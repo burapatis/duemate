@@ -75,10 +75,21 @@ class _SettingsPageState extends State<SettingsPage> {
 
     try {
       await _storage.clearReminders();
+
+      // ยกเลิก notification ที่ค้างอยู่ทั้งหมดหลังล้างข้อมูล
+      final notificationsCancelled =
+          await _notificationService.cancelAllNotifications();
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ล้างข้อมูลทดสอบแล้ว')),
+        SnackBar(
+          content: Text(
+            notificationsCancelled
+                ? 'ล้างข้อมูลทดสอบและการแจ้งเตือนแล้ว'
+                : 'ล้างข้อมูลทดสอบแล้ว แต่ยังยกเลิกการแจ้งเตือนไม่สำเร็จ',
+          ),
+        ),
       );
 
       // แจ้ง Home ให้รีเซ็ต state กลับเป็น mock เริ่มต้น
