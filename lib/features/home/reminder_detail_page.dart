@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../add/add_reminder_page.dart';
 import '../../services/notification_service.dart';
 import 'reminder_item.dart';
 import 'reminder_ui.dart';
@@ -33,10 +34,16 @@ class ReminderDetailPage extends StatelessWidget {
     return sorted.map((day) => '$day วัน').join(', ');
   }
 
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('จะพัฒนาในขั้นถัดไป')),
+  /// เปิดฟอร์มแก้ไข — ส่ง ReminderItem ที่อัปเดตกลับ Home
+  Future<void> _openEdit(BuildContext context) async {
+    final updatedItem = await Navigator.of(context).push<ReminderItem>(
+      MaterialPageRoute(
+        builder: (_) => AddReminderPage(editItem: item),
+      ),
     );
+
+    if (updatedItem == null || !context.mounted) return;
+    Navigator.of(context).pop(updatedItem);
   }
 
   /// ยืนยันแล้วลบรายการ — ส่ง reminder id กลับ parent เพื่ออัปเดต Home
@@ -152,7 +159,7 @@ class ReminderDetailPage extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => _showComingSoon(context),
+                  onPressed: () => _openEdit(context),
                   icon: const Icon(Icons.edit),
                   label: const Text('แก้ไข'),
                 ),

@@ -54,15 +54,15 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _openDetail(BuildContext context, ReminderItem item) async {
-    final deletedId = await Navigator.of(context).push<String>(
+    final result = await Navigator.of(context).push<Object>(
       MaterialPageRoute(
         builder: (_) => ReminderDetailPage(item: item),
       ),
     );
 
-    // ส่ง id ที่ลบกลับ Home เพื่ออัปเดตรายการหลัก
-    if (deletedId != null && context.mounted) {
-      Navigator.of(context).pop(deletedId);
+    // ส่งผลแก้ไข/ลบกลับ Home เพื่ออัปเดตรายการหลัก
+    if (result != null && context.mounted) {
+      Navigator.of(context).pop(result);
     }
   }
 

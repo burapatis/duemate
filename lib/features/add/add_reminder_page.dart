@@ -4,7 +4,10 @@ import '../home/reminder_item.dart';
 import '../home/reminder_ui.dart';
 
 class AddReminderPage extends StatefulWidget {
-  const AddReminderPage({super.key});
+  const AddReminderPage({super.key, this.editItem});
+
+  /// ถ้ามีค่า = โหมดแก้ไขรายการเดิม (ใช้ id เดิมตอนบันทึก)
+  final ReminderItem? editItem;
 
   @override
   State<AddReminderPage> createState() => _AddReminderPageState();
@@ -30,6 +33,22 @@ class _AddReminderPageState extends State<AddReminderPage> {
 
   String _selectedCategory = _categories.first;
   DateTime? _dueDate;
+
+  bool get _isEditing => widget.editItem != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final editItem = widget.editItem;
+    if (editItem == null) return;
+
+    // โหมดแก้ไข — แสดงข้อมูลเดิมในฟอร์ม
+    _titleController.text = editItem.title;
+    _noteController.text = editItem.note;
+    _selectedCategory = editItem.category;
+    _dueDate = editItem.dueDate;
+    _selectedReminderDays.addAll(editItem.reminderDays);
+  }
 
   @override
   void dispose() {
@@ -69,9 +88,11 @@ class _AddReminderPageState extends State<AddReminderPage> {
       return;
     }
 
-    // ส่งค่ากลับหน้า Home เพื่ออัปเดตรายการแบบ in-memory ใน v0.1.0
+    // ส่งค่ากลับ parent — แก้ไขใช้ id เดิม, เพิ่มใหม่สร้าง id ใหม่
     final item = ReminderItem(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: _isEditing
+          ? widget.editItem!.id
+          : DateTime.now().microsecondsSinceEpoch.toString(),
       title: _titleController.text.trim(),
       category: _selectedCategory,
       dueDate: _dueDate!,
@@ -96,7 +117,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('➕ เพิ่มรายการ'),
+        title: Text(_isEditing ? '✏️ แก้ไขรายการ' : '➕ เพิ่มรายการ'),
       ),
       body: Form(
         key: _formKey,

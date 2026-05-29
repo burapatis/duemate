@@ -109,28 +109,49 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     );
   }
 
+  /// อัปเดตรายการใน state และบันทึกลงเครื่อง
+  Future<void> _updateReminder(ReminderItem updated) async {
+    setState(() {
+      _upcomingDocuments = _upcomingDocuments
+          .map((item) => item.id == updated.id ? updated : item)
+          .toList();
+    });
+
+    await _persistReminders();
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('บันทึกการแก้ไขแล้ว')),
+    );
+  }
+
+  /// รับผลจาก Detail/Search — แก้ไข (ReminderItem) หรือลบ (String id)
+  Future<void> _handleNavigationResult(Object? result) async {
+    if (result is ReminderItem) {
+      await _updateReminder(result);
+    } else if (result is String) {
+      await _removeReminderById(result);
+    }
+  }
+
   Future<void> _openReminderDetail(ReminderItem item) async {
-    final deletedId = await Navigator.of(context).push<String>(
+    final result = await Navigator.of(context).push<Object>(
       MaterialPageRoute(
         builder: (_) => ReminderDetailPage(item: item),
       ),
     );
 
-    if (deletedId != null) {
-      await _removeReminderById(deletedId);
-    }
+    await _handleNavigationResult(result);
   }
 
   Future<void> _openSearch() async {
-    final deletedId = await Navigator.of(context).push<String>(
+    final result = await Navigator.of(context).push<Object>(
       MaterialPageRoute(
         builder: (_) => SearchPage(items: _upcomingDocuments),
       ),
     );
 
-    if (deletedId != null) {
-      await _removeReminderById(deletedId);
-    }
+    await _handleNavigationResult(result);
   }
 
   Future<void> _openAddReminder() async {
