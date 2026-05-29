@@ -32,8 +32,13 @@ class ReminderItem {
 
   /// สร้างจาก JSON ที่อ่านจาก shared_preferences
   factory ReminderItem.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
+    final id = (rawId is String && rawId.isNotEmpty)
+        ? rawId
+        : DateTime.now().microsecondsSinceEpoch.toString();
+
     return ReminderItem(
-      id: json['id'] as String,
+      id: id,
       title: json['title'] as String,
       category: json['category'] as String,
       dueDate: DateTime.parse(json['dueDate'] as String),

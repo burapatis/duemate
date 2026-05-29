@@ -40,4 +40,18 @@ void main() {
     expect(json['dueDate'], '2026-05-28T00:00:00.000');
     expect(json['reminderDays'], [7]);
   });
+
+  test('fromJson สร้าง id ใหม่เมื่อ id ว่างหรือไม่มี', () {
+    final restored = ReminderItem.fromJson({
+      'title': 'ทดสอบ',
+      'category': 'อื่น ๆ',
+      'dueDate': '2026-01-01T00:00:00.000',
+      'reminderDays': [7],
+      'note': '',
+      'priority': 'กลาง',
+    });
+
+    expect(restored.id, isNotEmpty);
+    expect(restored.title, 'ทดสอบ');
+  });
 }

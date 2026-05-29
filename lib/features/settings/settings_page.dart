@@ -1,14 +1,65 @@
 import 'package:flutter/material.dart';
 
+import '../../services/local_reminder_storage.dart';
 import '../home/reminder_ui.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
-  void _showComingSoon(BuildContext context) {
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  final _storage = LocalReminderStorage();
+
+  void _showComingSoon() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('จะพัฒนาในเวอร์ชันถัดไป')),
     );
+  }
+
+  Future<void> _confirmClearTestData() async {
+    final shouldClear = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('ล้างข้อมูลทดสอบ?'),
+          content: const Text(
+            'รายการที่เพิ่มไว้ในเครื่องนี้จะถูกล้าง และแอปจะกลับไปใช้รายการตัวอย่างเริ่มต้น',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('ยกเลิก'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('ล้างข้อมูล'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldClear != true || !mounted) return;
+
+    try {
+      await _storage.clearReminders();
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ล้างข้อมูลทดสอบแล้ว')),
+      );
+
+      // แจ้ง Home ให้รีเซ็ต state กลับเป็น mock เริ่มต้น
+      Navigator.of(context).pop(true);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ล้างข้อมูลไม่สำเร็จ กรุณาลองใหม่')),
+      );
+    }
   }
 
   @override
@@ -39,6 +90,30 @@ class SettingsPage extends StatelessWidget {
                   const SizedBox(height: 4),
                   const Text(
                     '• ไม่เก็บเลขบัตรประชาชน เลขพาสปอร์ต หรือภาพเอกสารสำคัญใน MVP',
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: ReminderUi.sectionGap),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🧪 ข้อมูลทดสอบ',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'ใช้สำหรับล้างรายการที่บันทึกไว้ในเครื่องระหว่างทดสอบแอป',
+                  ),
+                  const SizedBox(height: ReminderUi.sectionGap),
+                  OutlinedButton(
+                    onPressed: _confirmClearTestData,
+                    child: const Text('ล้างข้อมูลทดสอบในเครื่อง'),
                   ),
                 ],
               ),
@@ -102,14 +177,13 @@ class SettingsPage extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 12),
-                  // ปุ่มเหล่านี้เป็น placeholder เพื่อให้ flow ใช้งานได้ก่อนใน v0.1.0
                   OutlinedButton(
-                    onPressed: () => _showComingSoon(context),
+                    onPressed: _showComingSoon,
                     child: const Text('ทดสอบแจ้งเตือน'),
                   ),
                   const SizedBox(height: ReminderUi.sectionGap),
                   OutlinedButton(
-                    onPressed: () => _showComingSoon(context),
+                    onPressed: _showComingSoon,
                     child: const Text('ดูข้อมูลแอปเพิ่มเติม'),
                   ),
                 ],

@@ -71,6 +71,27 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     }
   }
 
+  /// รีเซ็ตรายการบนหน้า Home กลับเป็น mock เริ่มต้น
+  void _resetToMockData() {
+    setState(() {
+      _upcomingDocuments = List<ReminderItem>.from(
+        MockDashboardData.initialUpcomingDocuments,
+      );
+    });
+  }
+
+  Future<void> _openSettings() async {
+    final didClear = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => const SettingsPage(),
+      ),
+    );
+
+    if (didClear == true) {
+      _resetToMockData();
+    }
+  }
+
   Future<void> _openAddReminder() async {
     final newItem = await Navigator.of(context).push<ReminderItem>(
       MaterialPageRoute(
@@ -175,6 +196,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           // แสดงรายการจาก state ปัจจุบัน รวมรายการที่เพิ่งเพิ่มจากหน้า Add
           ..._upcomingDocuments.map(
             (task) => Card(
+              key: ValueKey(task.id),
               margin: const EdgeInsets.only(bottom: ReminderUi.sectionGap),
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(
@@ -246,13 +268,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                     child: const Text('📤 ส่งออก'),
                   ),
                   OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const SettingsPage(),
-                        ),
-                      );
-                    },
+                    onPressed: _openSettings,
                     child: const Text('⚙️ ตั้งค่า'),
                   ),
                 ],

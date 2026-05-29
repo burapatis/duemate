@@ -53,6 +53,14 @@ class _SearchPageState extends State<SearchPage> {
     return 'ครบกำหนด $day/$month/$year';
   }
 
+  void _openDetail(BuildContext context, ReminderItem item) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReminderDetailPage(item: item),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final results = _filteredItems();
@@ -128,6 +136,7 @@ class _SearchPageState extends State<SearchPage> {
                     itemBuilder: (context, index) {
                       final item = results[index];
                       return Card(
+                        key: ValueKey(item.id),
                         margin: const EdgeInsets.only(bottom: ReminderUi.sectionGap),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
@@ -139,13 +148,7 @@ class _SearchPageState extends State<SearchPage> {
                             '${ReminderUi.categoryLabel(item.category)} • ${_formatDueLabel(item.dueDate)}',
                           ),
                           trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => ReminderDetailPage(item: item),
-                              ),
-                            );
-                          },
+                          onTap: () => _openDetail(context, item),
                         ),
                       );
                     },

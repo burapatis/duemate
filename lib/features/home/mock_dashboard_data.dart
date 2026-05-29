@@ -21,7 +21,7 @@ class MockDashboardData {
 
   static final initialUpcomingDocuments = <ReminderItem>[
     ReminderItem(
-      id: 'mock-001',
+      id: 'mock_car_act',
       title: 'พ.ร.บ. รถยนต์',
       category: 'รถ',
       dueDate: DateTime(2026, 5, 28),
@@ -30,7 +30,7 @@ class MockDashboardData {
       priority: 'สูง',
     ),
     ReminderItem(
-      id: 'mock-002',
+      id: 'mock_driver_license',
       title: 'ใบขับขี่',
       category: 'ส่วนตัว',
       dueDate: DateTime(2026, 6, 15),
@@ -39,7 +39,7 @@ class MockDashboardData {
       priority: 'กลาง',
     ),
     ReminderItem(
-      id: 'mock-003',
+      id: 'mock_warranty_washing_machine',
       title: 'ประกันเครื่องซักผ้า',
       category: 'สินค้า/รับประกัน',
       dueDate: DateTime(2026, 7, 22),
@@ -48,7 +48,7 @@ class MockDashboardData {
       priority: 'ต่ำ',
     ),
     ReminderItem(
-      id: 'mock-004',
+      id: 'mock_house_rental_contract',
       title: 'สัญญาเช่าบ้าน',
       category: 'บ้าน',
       dueDate: DateTime(2026, 9, 30),
