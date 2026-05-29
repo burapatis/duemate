@@ -7,7 +7,7 @@ void main() {
     await tester.pumpWidget(const DueMateApp());
 
     expect(find.text('DueMate'), findsOneWidget);
-    expect(find.text('งานใกล้ครบกำหนด'), findsOneWidget);
-    expect(find.text('งานวันนี้'), findsOneWidget);
+    expect(find.text('🗂️ เอกสารใกล้ครบกำหนด'), findsOneWidget);
+    expect(find.text('วันนี้'), findsOneWidget);
   });
 }

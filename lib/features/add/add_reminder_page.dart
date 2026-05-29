@@ -71,6 +71,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
 
     // ส่งค่ากลับหน้า Home เพื่ออัปเดตรายการแบบ in-memory ใน v0.1.0
     final item = ReminderItem(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: _titleController.text.trim(),
       category: _selectedCategory,
       dueDate: _dueDate!,
