@@ -164,7 +164,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 4),
                   const Text('• ปิดแอปแล้วข้อมูลที่เพิ่มเองอาจหายได้'),
                   const SizedBox(height: 4),
-                  const Text('• ยังไม่ใช่ระบบแจ้งเตือนจริง'),
+                  const Text('• แจ้งเตือนตอนนี้เป็นแบบทดสอบเท่านั้น ยังไม่เตือนตามวันครบกำหนดจริง'),
                 ],
               ),
             ),
@@ -209,6 +209,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   OutlinedButton(
                     onPressed: _testNotification,
                     child: const Text('ทดสอบแจ้งเตือน'),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'ใช้สำหรับทดสอบระบบแจ้งเตือนระหว่างพัฒนา ยังไม่ใช่การเตือนตามวันครบกำหนดจริง',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: ReminderUi.sectionGap),
                   OutlinedButton(
