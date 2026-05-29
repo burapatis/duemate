@@ -124,8 +124,8 @@ class NotificationService {
     }
   }
 
-  /// ตั้งแจ้งเตือนตามวันเวลา — ยังไม่ผูกกับ dueDate/reminderDays ในรอบนี้
-  Future<void> scheduleReminderNotification({
+  /// ตั้งแจ้งเตือนตามวันเวลา — ยังไม่ผูกกับ dueDate/reminderDays ในรอบนี้ — คืน true ถ้าสำเร็จ
+  Future<bool> scheduleReminderNotification({
     required int id,
     required String title,
     required String body,
@@ -133,11 +133,11 @@ class NotificationService {
   }) async {
     try {
       final ready = await _ensureReady();
-      if (!ready) return;
+      if (!ready) return false;
 
       // วันเวลาผ่านแล้ว — ไม่ schedule
       if (scheduledDate.isBefore(DateTime.now())) {
-        return;
+        return false;
       }
 
       final tzScheduled = tz.TZDateTime.from(scheduledDate, tz.local);
@@ -151,8 +151,10 @@ class NotificationService {
         // inexact ลดความจำเป็นต้องขอ exact alarm permission บน Android
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       );
+      return true;
     } catch (_) {
       // schedule ไม่ได้ — ไม่ให้แอป crash
+      return false;
     }
   }
 

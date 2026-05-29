@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/local_reminder_storage.dart';
+import '../../services/notification_service.dart';
 import '../add/add_reminder_page.dart';
 import '../export/export_page.dart';
 import '../search/search_page.dart';
@@ -19,6 +20,7 @@ class HomeDashboardPage extends StatefulWidget {
 
 class _HomeDashboardPageState extends State<HomeDashboardPage> {
   final _storage = LocalReminderStorage();
+  final _notificationService = NotificationService();
   bool _isLoading = true;
   List<ReminderItem> _upcomingDocuments = [];
 
@@ -92,6 +94,25 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     }
   }
 
+  /// ตั้งแจ้งเตือนทดสอบ 1 นาทีหลังบันทึกรายการใหม่
+  Future<bool> _scheduleTestNotificationAfterSave(ReminderItem item) async {
+    try {
+      final initialized = await _notificationService.initialize();
+      if (!initialized) return false;
+
+      await _notificationService.requestPermissions();
+
+      return await _notificationService.scheduleReminderNotification(
+        id: item.id.hashCode.abs(),
+        title: 'DueMate',
+        body: 'อย่าลืมตรวจสอบรายการ: ${item.title}',
+        scheduledDate: DateTime.now().add(const Duration(minutes: 1)),
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> _openAddReminder() async {
     final newItem = await Navigator.of(context).push<ReminderItem>(
       MaterialPageRoute(
@@ -109,9 +130,17 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     await _persistReminders();
 
     if (!mounted) return;
+
+    final scheduled = await _scheduleTestNotificationAfterSave(newItem);
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('บันทึกรายการแล้ว'),
+      SnackBar(
+        content: Text(
+          scheduled
+              ? 'ตั้งแจ้งเตือนทดสอบแล้ว'
+              : 'บันทึกรายการแล้ว แต่ยังตั้งแจ้งเตือนไม่สำเร็จ',
+        ),
       ),
     );
   }
