@@ -109,8 +109,12 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     );
   }
 
-  /// อัปเดตรายการใน state และบันทึกลงเครื่อง
+  /// อัปเดตรายการใน state, บันทึกลงเครื่อง และปรับการแจ้งเตือน
   Future<void> _updateReminder(ReminderItem updated) async {
+    final previous = _upcomingDocuments.firstWhere(
+      (item) => item.id == updated.id,
+    );
+
     setState(() {
       _upcomingDocuments = _upcomingDocuments
           .map((item) => item.id == updated.id ? updated : item)
@@ -120,8 +124,26 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     await _persistReminders();
 
     if (!mounted) return;
+
+    final scheduleResult =
+        await _notificationService.rescheduleRemindersForItem(
+      previous: previous,
+      updated: updated,
+    );
+
+    if (!mounted) return;
+
+    final notificationOk =
+        scheduleResult != ScheduleRemindersResult.partialFailure;
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('บันทึกการแก้ไขแล้ว')),
+      SnackBar(
+        content: Text(
+          notificationOk
+              ? 'บันทึกการแก้ไขแล้ว และปรับการแจ้งเตือนแล้ว'
+              : 'บันทึกการแก้ไขแล้ว แต่ยังปรับการแจ้งเตือนไม่สำเร็จ',
+        ),
+      ),
     );
   }
 

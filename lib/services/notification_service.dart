@@ -271,6 +271,20 @@ class NotificationService {
     }
   }
 
+  /// ยกเลิกแจ้งเตือนเดิมแล้วตั้งใหม่ตามข้อมูลล่าสุด (ใช้หลังแก้ไขรายการ)
+  Future<ScheduleRemindersResult> rescheduleRemindersForItem({
+    required ReminderItem previous,
+    required ReminderItem updated,
+  }) async {
+    try {
+      // ยกเลิกตาม reminderDays เดิมก่อนแก้ไข
+      await cancelRemindersForItem(previous);
+      return scheduleRemindersForItem(updated);
+    } catch (_) {
+      return ScheduleRemindersResult.partialFailure;
+    }
+  }
+
   /// ยกเลิกแจ้งเตือนที่แสดงอยู่ทั้งหมด
   Future<void> cancelAllNotifications() async {
     try {
