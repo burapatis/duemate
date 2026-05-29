@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../services/notification_service.dart';
 import 'reminder_item.dart';
 import 'reminder_ui.dart';
 
@@ -36,6 +37,37 @@ class ReminderDetailPage extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('จะพัฒนาในขั้นถัดไป')),
     );
+  }
+
+  /// ยืนยันแล้วลบรายการ — ส่ง reminder id กลับ parent เพื่ออัปเดต Home
+  Future<void> _confirmDelete(BuildContext context) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('ลบรายการนี้?'),
+          content: const Text('รายการนี้จะถูกลบออกจากเครื่องนี้'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('ยกเลิก'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('ลบรายการ'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true || !context.mounted) return;
+
+    // ยกเลิก notification ที่เกี่ยวข้อง — ไม่ block การลบถ้า cancel ล้มเหลว
+    await NotificationService().cancelRemindersForItem(item);
+
+    if (!context.mounted) return;
+    Navigator.of(context).pop(item.id);
   }
 
   @override
@@ -128,7 +160,7 @@ class ReminderDetailPage extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () => _showComingSoon(context),
+                  onPressed: () => _confirmDelete(context),
                   icon: const Icon(Icons.delete_outline),
                   label: const Text('ลบ'),
                 ),

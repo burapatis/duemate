@@ -94,6 +94,45 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     }
   }
 
+  /// ลบรายการจาก state และบันทึกลงเครื่อง
+  Future<void> _removeReminderById(String id) async {
+    setState(() {
+      _upcomingDocuments =
+          _upcomingDocuments.where((item) => item.id != id).toList();
+    });
+
+    await _persistReminders();
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('ลบรายการแล้ว')),
+    );
+  }
+
+  Future<void> _openReminderDetail(ReminderItem item) async {
+    final deletedId = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => ReminderDetailPage(item: item),
+      ),
+    );
+
+    if (deletedId != null) {
+      await _removeReminderById(deletedId);
+    }
+  }
+
+  Future<void> _openSearch() async {
+    final deletedId = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => SearchPage(items: _upcomingDocuments),
+      ),
+    );
+
+    if (deletedId != null) {
+      await _removeReminderById(deletedId);
+    }
+  }
+
   Future<void> _openAddReminder() async {
     final newItem = await Navigator.of(context).push<ReminderItem>(
       MaterialPageRoute(
@@ -227,14 +266,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                   '${ReminderUi.categoryLabel(task.category)} • ${_formatDueLabel(task.dueDate)}',
                 ),
                 trailing: _PriorityChip(label: task.priority),
-                onTap: () {
-                  // ส่งข้อมูลรายการที่เลือกไปหน้า Detail ทั้งจาก mock และที่เพิ่มใหม่
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ReminderDetailPage(item: task),
-                    ),
-                  );
-                },
+                onTap: () => _openReminderDetail(task),
               ),
             ),
           ),
@@ -267,13 +299,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                 alignment: WrapAlignment.center,
                 children: [
                   OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => SearchPage(items: _upcomingDocuments),
-                        ),
-                      );
-                    },
+                    onPressed: _openSearch,
                     child: const Text('🔎 ค้นหา'),
                   ),
                   OutlinedButton(

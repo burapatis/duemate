@@ -53,12 +53,17 @@ class _SearchPageState extends State<SearchPage> {
     return 'ครบกำหนด $day/$month/$year';
   }
 
-  void _openDetail(BuildContext context, ReminderItem item) {
-    Navigator.of(context).push(
+  Future<void> _openDetail(BuildContext context, ReminderItem item) async {
+    final deletedId = await Navigator.of(context).push<String>(
       MaterialPageRoute(
         builder: (_) => ReminderDetailPage(item: item),
       ),
     );
+
+    // ส่ง id ที่ลบกลับ Home เพื่ออัปเดตรายการหลัก
+    if (deletedId != null && context.mounted) {
+      Navigator.of(context).pop(deletedId);
+    }
   }
 
   @override

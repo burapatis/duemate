@@ -257,6 +257,20 @@ class NotificationService {
     }
   }
 
+  /// ยกเลิกแจ้งเตือนทั้งหมดที่เกี่ยวกับรายการ (ใช้ helper id จาก Step 2)
+  Future<void> cancelRemindersForItem(ReminderItem item) async {
+    try {
+      final notificationIds =
+          reminderNotificationIds(item.id, item.reminderDays);
+
+      for (final id in notificationIds) {
+        await cancelNotification(id);
+      }
+    } catch (_) {
+      // ยกเลิกไม่ได้ — ไม่ให้แอป crash
+    }
+  }
+
   /// ยกเลิกแจ้งเตือนที่แสดงอยู่ทั้งหมด
   Future<void> cancelAllNotifications() async {
     try {
