@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../services/local_reminder_storage.dart';
 import '../add/add_reminder_page.dart';
 import '../export/export_page.dart';
 import '../search/search_page.dart';
@@ -17,14 +18,57 @@ class HomeDashboardPage extends StatefulWidget {
 }
 
 class _HomeDashboardPageState extends State<HomeDashboardPage> {
-  late List<ReminderItem> _upcomingDocuments;
+  final _storage = LocalReminderStorage();
+  bool _isLoading = true;
+  List<ReminderItem> _upcomingDocuments = [];
 
   @override
   void initState() {
     super.initState();
-    _upcomingDocuments = List<ReminderItem>.from(
-      MockDashboardData.initialUpcomingDocuments,
-    );
+    _loadReminders();
+  }
+
+  /// โหลดรายการจากเครื่อง — ถ้าว่างให้ใช้ mock เริ่มต้น
+  Future<void> _loadReminders() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final stored = await _storage.loadReminders();
+      final items = stored.isEmpty
+          ? List<ReminderItem>.from(MockDashboardData.initialUpcomingDocuments)
+          : stored;
+
+      if (!mounted) return;
+      setState(() {
+        _upcomingDocuments = items;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _upcomingDocuments = List<ReminderItem>.from(
+          MockDashboardData.initialUpcomingDocuments,
+        );
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('โหลดข้อมูลไม่สำเร็จ ใช้ข้อมูลเริ่มต้นแทน')),
+      );
+    }
+  }
+
+  /// บันทึกรายการลงเครื่อง — ไม่ให้ crash ถ้าบันทึกไม่สำเร็จ
+  Future<void> _persistReminders() async {
+    try {
+      await _storage.saveReminders(_upcomingDocuments);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('บันทึกลงเครื่องไม่สำเร็จ กรุณาลองใหม่')),
+      );
+    }
   }
 
   Future<void> _openAddReminder() async {
@@ -36,15 +80,17 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
     if (newItem == null) return;
 
-    // เพิ่มรายการใหม่เข้า state ทันที (เก็บในหน่วยความจำเท่านั้นสำหรับ v0.1.0)
+    final updatedList = [newItem, ..._upcomingDocuments];
     setState(() {
-      _upcomingDocuments = [newItem, ..._upcomingDocuments];
+      _upcomingDocuments = updatedList;
     });
+
+    await _persistReminders();
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('บันทึกตัวอย่างแล้ว — ขั้นนี้ยังไม่เก็บข้อมูลถาวร'),
+        content: Text('บันทึกรายการแล้ว'),
       ),
     );
   }
@@ -79,6 +125,24 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('DueMate'),
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('กำลังโหลดข้อมูล...'),
+            ],
+          ),
+        ),
+      );
+    }
+
     final summary = _buildSummary(_upcomingDocuments);
     final colorScheme = Theme.of(context).colorScheme;
 
