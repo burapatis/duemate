@@ -1,4 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 
 /// จัดการ local notifications กลางของแอป DueMate
 class NotificationService {
@@ -7,16 +9,46 @@ class NotificationService {
   static const _androidChannelName = 'DueMate';
   static const _androidChannelDescription = 'แจ้งเตือนจาก DueMate';
 
+  static const _notificationDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      _androidChannelId,
+      _androidChannelName,
+      channelDescription: _androidChannelDescription,
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+    ),
+    iOS: DarwinNotificationDetails(),
+    macOS: DarwinNotificationDetails(),
+  );
+
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
+  bool _timezoneReady = false;
+
+  /// โหลด timezone database — ใช้ Asia/Bangkok ชั่วคราวสำหรับผู้ใช้หลักในไทย
+  void _initTimeZone() {
+    if (_timezoneReady) return;
+
+    tz_data.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Bangkok'));
+    _timezoneReady = true;
+  }
+
+  /// มั่นใจว่า plugin พร้อมใช้งานก่อน schedule/cancel
+  Future<bool> _ensureReady() async {
+    if (_initialized) return true;
+    return initialize();
+  }
 
   /// ตั้งค่า plugin เบื้องต้นสำหรับ Android / iOS / macOS — คืน true ถ้าพร้อมใช้งาน
   Future<bool> initialize() async {
     if (_initialized) return true;
 
     try {
+      _initTimeZone();
+
       const androidSettings = AndroidInitializationSettings(
         '@mipmap/ic_launcher',
       );
@@ -76,37 +108,71 @@ class NotificationService {
   /// แสดง notification ทดสอบ (ยังไม่เชื่อมกับรายการจริง) — คืน true ถ้าแสดงได้
   Future<bool> showTestNotification() async {
     try {
-      if (!_initialized) {
-        final ready = await initialize();
-        if (!ready) return false;
-      }
-
-      const androidDetails = AndroidNotificationDetails(
-        _androidChannelId,
-        _androidChannelName,
-        channelDescription: _androidChannelDescription,
-        importance: Importance.defaultImportance,
-        priority: Priority.defaultPriority,
-      );
-
-      const darwinDetails = DarwinNotificationDetails();
-
-      const notificationDetails = NotificationDetails(
-        android: androidDetails,
-        iOS: darwinDetails,
-        macOS: darwinDetails,
-      );
+      final ready = await _ensureReady();
+      if (!ready) return false;
 
       await _plugin.show(
         id: _testNotificationId,
         title: 'DueMate',
         body: 'นี่คือการทดสอบแจ้งเตือน',
-        notificationDetails: notificationDetails,
+        notificationDetails: _notificationDetails,
       );
       return true;
     } catch (_) {
       // แสดงไม่ได้ — ไม่ให้แอป crash
       return false;
+    }
+  }
+
+  /// ตั้งแจ้งเตือนตามวันเวลา — ยังไม่ผูกกับ dueDate/reminderDays ในรอบนี้
+  Future<void> scheduleReminderNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+  }) async {
+    try {
+      final ready = await _ensureReady();
+      if (!ready) return;
+
+      // วันเวลาผ่านแล้ว — ไม่ schedule
+      if (scheduledDate.isBefore(DateTime.now())) {
+        return;
+      }
+
+      final tzScheduled = tz.TZDateTime.from(scheduledDate, tz.local);
+
+      await _plugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: tzScheduled,
+        notificationDetails: _notificationDetails,
+        // inexact ลดความจำเป็นต้องขอ exact alarm permission บน Android
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    } catch (_) {
+      // schedule ไม่ได้ — ไม่ให้แอป crash
+    }
+  }
+
+  /// ยกเลิกแจ้งเตือนตาม id
+  Future<void> cancelNotification(int id) async {
+    try {
+      await _ensureReady();
+      await _plugin.cancel(id: id);
+    } catch (_) {
+      // ยกเลิกไม่ได้ — ไม่ throw ต่อ
+    }
+  }
+
+  /// ยกเลิกแจ้งเตือนที่แสดงอยู่ทั้งหมด
+  Future<void> cancelAllNotifications() async {
+    try {
+      await _ensureReady();
+      await _plugin.cancelAll();
+    } catch (_) {
+      // ยกเลิกไม่ได้ — ไม่ throw ต่อ
     }
   }
 }
