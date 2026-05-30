@@ -66,7 +66,8 @@ class ExportService {
     final csvContent = csv.encode(rows);
     final directory = await _exportDirectory();
     final file = File('${directory.path}/$_csvFileName');
-    await file.writeAsString(csvContent);
+    // UTF-8 BOM ช่วยให้ Excel บางเครื่องอ่านภาษาไทยได้ถูกต้อง
+    await file.writeAsString('\uFEFF$csvContent');
     return file;
   }
 

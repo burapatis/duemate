@@ -199,6 +199,16 @@ class _ExportPageState extends State<ExportPage> {
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
+                  if (_selectedFileFormat == _pdfFormat) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'หมายเหตุ: PDF ภาษาไทยอาจแสดงผลแตกต่างกันในบางเครื่อง '
+                      'หากพบปัญหาแนะนำใช้ไฟล์ตาราง (CSV)',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

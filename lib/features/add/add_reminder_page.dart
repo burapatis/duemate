@@ -25,6 +25,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
   ];
 
   static const _reminderOptions = <int>[30, 15, 7, 1];
+  static const _defaultAddReminderDays = <int>[7];
 
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
@@ -50,6 +51,23 @@ class _AddReminderPageState extends State<AddReminderPage> {
     }
     return false;
   }
+
+  /// โหมด Add — มีข้อมูลที่กรอกแล้วแต่ยังไม่บันทึก
+  bool get _hasUnsavedAddDraft {
+    if (_isEditing) return false;
+
+    if (_titleController.text.trim().isNotEmpty) return true;
+    if (_noteController.text.trim().isNotEmpty) return true;
+    if (_selectedCategory != _categories.first) return true;
+    if (_dueDate != null) return true;
+    if (!_isSameReminderDays(_selectedReminderDays, _defaultAddReminderDays)) {
+      return true;
+    }
+    return false;
+  }
+
+  bool get _shouldConfirmBeforePop =>
+      _isEditing ? _hasUnsavedChanges : _hasUnsavedAddDraft;
 
   bool _isSameCalendarDay(DateTime? date, DateTime original) {
     if (date == null) return false;
@@ -87,15 +105,41 @@ class _AddReminderPageState extends State<AddReminderPage> {
     );
   }
 
-  /// ปุ่มกลับ AppBar และ system back — เตือนเมื่อ Edit มี unsaved changes
+  Future<bool?> _confirmDiscardAddDraft() {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('ยังไม่ได้บันทึกรายการ'),
+          content: const Text(
+            'ถ้ากลับตอนนี้ ข้อมูลที่กรอกไว้จะไม่ถูกบันทึก',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('กลับไปกรอกต่อ'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('ออกโดยไม่บันทึก'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// ปุ่มกลับ AppBar และ system back — เตือนเมื่อ Add/Edit มีข้อมูลที่ยังไม่บันทึก
   Future<void> _handleBack() async {
-    if (!_isEditing || !_hasUnsavedChanges) {
+    if (!_shouldConfirmBeforePop) {
       if (!mounted) return;
       Navigator.of(context).pop();
       return;
     }
 
-    final shouldDiscard = await _confirmDiscardChanges();
+    final shouldDiscard = _isEditing
+        ? await _confirmDiscardChanges()
+        : await _confirmDiscardAddDraft();
     if (shouldDiscard == true && mounted) {
       Navigator.of(context).pop();
     }
@@ -145,19 +189,32 @@ class _AddReminderPageState extends State<AddReminderPage> {
     }
   }
 
-  void _saveSample() {
-    // validate เฉพาะข้อมูลสำคัญในขั้นนี้ ก่อนจะไปเชื่อมฐานข้อมูลจริงในอนาคต
-    final isFormValid = _formKey.currentState?.validate() ?? false;
-    if (!isFormValid) return;
+  Future<bool?> _confirmSaveWithoutReminder() {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('ยังไม่ได้เลือกการแจ้งเตือน'),
+          content: const Text(
+            'รายการนี้จะถูกบันทึกไว้ แต่แอปจะไม่ตั้งแจ้งเตือนล่วงหน้า',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('กลับไปเลือกเตือน'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('บันทึกโดยไม่เตือน'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-    if (_dueDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('กรุณาเลือกวันครบกำหนด')),
-      );
-      return;
-    }
-
-    // ส่งค่ากลับ parent — แก้ไขใช้ id เดิม, เพิ่มใหม่สร้าง id ใหม่
+  /// บันทึกและส่ง ReminderItem กลับ parent
+  void _performSave() {
     final item = ReminderItem(
       id: _isEditing
           ? widget.editItem!.id
@@ -175,6 +232,26 @@ class _AddReminderPageState extends State<AddReminderPage> {
     Navigator.of(context).pop(item);
   }
 
+  Future<void> _saveSample() async {
+    // validate เฉพาะข้อมูลสำคัญในขั้นนี้ ก่อนจะไปเชื่อมฐานข้อมูลจริงในอนาคต
+    final isFormValid = _formKey.currentState?.validate() ?? false;
+    if (!isFormValid) return;
+
+    if (_dueDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('กรุณาเลือกวันครบกำหนด')),
+      );
+      return;
+    }
+
+    if (_selectedReminderDays.isEmpty) {
+      final shouldSave = await _confirmSaveWithoutReminder();
+      if (shouldSave != true || !mounted) return;
+    }
+
+    _performSave();
+  }
+
   String _formatDate(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
@@ -185,7 +262,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_isEditing || !_hasUnsavedChanges,
+      canPop: !_shouldConfirmBeforePop,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         _handleBack();
