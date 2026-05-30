@@ -12,6 +12,16 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  static const _betaChecklistItems = <String>[
+    'เพิ่มรายการเอกสาร',
+    'แก้ไขรายการ',
+    'ลบรายการ',
+    'ค้นหาและกรองรายการ',
+    'ตั้งเตือนล่วงหน้า',
+    'ส่งออกเป็น CSV หรือ PDF',
+    'ล้างข้อมูลทั้งหมดในเครื่อง',
+  ];
+
   final _storage = LocalReminderStorage();
   final _notificationService = NotificationService();
 
@@ -153,6 +163,41 @@ class _SettingsPageState extends State<SettingsPage> {
                   Text(
                     'บันทึกรายการ · แจ้งเตือนตามวันที่ · ส่งออกเป็นไฟล์ได้',
                     style: mutedStyle,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: ReminderUi.sectionGap),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ความพร้อมสำหรับทดสอบกลุ่มเล็ก',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'DueMate เวอร์ชันนี้พร้อมสำหรับการทดสอบเบื้องต้นกับผู้ใช้กลุ่มเล็ก '
+                    'เช่น 5–10 คน',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'ยังเป็นเวอร์ชันทดสอบ ไม่ใช่เวอร์ชันเผยแพร่จริงบน Store',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: ReminderUi.sectionGap),
+                  Text('สิ่งที่ควรลองทดสอบ:', style: mutedStyle),
+                  const SizedBox(height: 8),
+                  ..._betaChecklistItems.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text('• $item'),
+                    ),
                   ),
                 ],
               ),
