@@ -22,6 +22,12 @@ class _SettingsPageState extends State<SettingsPage> {
     'ล้างข้อมูลทั้งหมดในเครื่อง',
   ];
 
+  static const _userTestGuideItems = <String>[
+    'แนะนำให้ทดสอบกับผู้ใช้ 5–10 คน',
+    'ให้ผู้ใช้ลองเพิ่ม แก้ไข ลบ ค้นหา ตั้งเตือน และส่งออกไฟล์',
+    'จดปัญหาที่พบ เช่น อ่านยาก กดผิด หรือไม่เข้าใจข้อความ',
+  ];
+
   final _storage = LocalReminderStorage();
   final _notificationService = NotificationService();
 
@@ -194,6 +200,28 @@ class _SettingsPageState extends State<SettingsPage> {
                   Text('สิ่งที่ควรลองทดสอบ:', style: mutedStyle),
                   const SizedBox(height: 8),
                   ..._betaChecklistItems.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text('• $item'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: ReminderUi.sectionGap),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'แนวทางทดสอบกับผู้ใช้จริง',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  ..._userTestGuideItems.map(
                     (item) => Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text('• $item'),
