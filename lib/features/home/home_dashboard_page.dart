@@ -6,7 +6,7 @@ import '../add/add_reminder_page.dart';
 import '../export/export_page.dart';
 import '../search/search_page.dart';
 import '../settings/settings_page.dart';
-import 'mock_dashboard_data.dart';
+import 'mock_dashboard_data.dart' show DashboardSummary;
 import 'reminder_detail_page.dart';
 import 'reminder_item.dart';
 import 'reminder_ui.dart';
@@ -30,7 +30,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     _loadReminders();
   }
 
-  /// โหลดรายการจากเครื่อง — ถ้าว่างให้ใช้ mock เริ่มต้น
+  /// โหลดรายการจากเครื่อง — ถ้าว่างให้แสดง empty state (ไม่โหลด mock อัตโนมัติ)
   Future<void> _loadReminders() async {
     setState(() {
       _isLoading = true;
@@ -38,25 +38,20 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
     try {
       final stored = await _storage.loadReminders();
-      final items = stored.isEmpty
-          ? List<ReminderItem>.from(MockDashboardData.initialUpcomingDocuments)
-          : stored;
 
       if (!mounted) return;
       setState(() {
-        _upcomingDocuments = items;
+        _upcomingDocuments = stored;
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _upcomingDocuments = List<ReminderItem>.from(
-          MockDashboardData.initialUpcomingDocuments,
-        );
+        _upcomingDocuments = [];
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('โหลดข้อมูลไม่สำเร็จ ใช้ข้อมูลเริ่มต้นแทน')),
+        const SnackBar(content: Text('โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่')),
       );
     }
   }
@@ -73,12 +68,10 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     }
   }
 
-  /// รีเซ็ตรายการบนหน้า Home กลับเป็น mock เริ่มต้น
-  void _resetToMockData() {
+  /// เคลิร์รายการใน memory หลังล้างข้อมูลจาก Settings (storage ว่างแล้ว)
+  void _clearRemindersInMemory() {
     setState(() {
-      _upcomingDocuments = List<ReminderItem>.from(
-        MockDashboardData.initialUpcomingDocuments,
-      );
+      _upcomingDocuments = [];
     });
   }
 
@@ -90,7 +83,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     );
 
     if (didClear == true) {
-      _resetToMockData();
+      _clearRemindersInMemory();
     }
   }
 
@@ -305,8 +298,40 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
-          // แสดงรายการจาก state ปัจจุบัน รวมรายการที่เพิ่งเพิ่มจากหน้า Add
-          ..._upcomingDocuments.map(
+          if (_upcomingDocuments.isEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ReminderUi.cardPadding,
+                  vertical: 24,
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.description_outlined,
+                      size: 40,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'ยังไม่มีรายการเอกสาร',
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'กดเพิ่มรายการใหม่เพื่อเริ่มบันทึกวันครบกำหนด',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ..._upcomingDocuments.map(
             (task) => Card(
               key: ValueKey(task.id),
               margin: const EdgeInsets.only(bottom: ReminderUi.sectionGap),

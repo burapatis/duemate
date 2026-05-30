@@ -109,7 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       );
 
-      // แจ้ง Home ให้รีเซ็ต state กลับเป็นรายการเริ่มต้น
+      // แจ้ง Home ให้เคลิร์ state เป็นรายการว่าง
       Navigator.of(context).pop(true);
     } catch (_) {
       if (!mounted) return;
