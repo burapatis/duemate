@@ -290,7 +290,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     style: mutedStyle,
                   ),
                   const SizedBox(height: 8),
-                  Text('0.6.0', style: mutedStyle),
+                  Text('DueMate v0.7.1', style: mutedStyle),
                 ],
               ),
             ),
