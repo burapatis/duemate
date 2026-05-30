@@ -15,8 +15,10 @@ class ExportPage extends StatefulWidget {
 }
 
 class _ExportPageState extends State<ExportPage> {
+  static const _pdfFormat = 'PDF อ่านง่าย';
   static const _csvFormat = 'CSV เปิดใน Excel';
   static const _csvFileName = 'duemate_reminders.csv';
+  static const _pdfFileName = 'duemate_reminders.pdf';
 
   final _exportService = ExportService();
 
@@ -44,17 +46,18 @@ class _ExportPageState extends State<ExportPage> {
     }).toList();
   }
 
-  /// สร้างไฟล์ CSV แล้วเปิด share sheet ให้ผู้ใช้แชร์หรือบันทึกไฟล์
+  /// สร้างไฟล์ export ตามรูปแบบที่เลือก — CSV แชร์ได้, PDF สร้างไฟล์ในเครื่อง
   Future<void> _createExportFile() async {
-    if (_selectedFileFormat != _csvFormat) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('ฟีเจอร์ส่งออก PDF จะพัฒนาในเวอร์ชันถัดไป'),
-        ),
-      );
+    if (_selectedFileFormat == _csvFormat) {
+      await _createAndShareCsv();
       return;
     }
 
+    await _createPdf();
+  }
+
+  /// สร้างไฟล์ CSV แล้วเปิด share sheet ให้ผู้ใช้แชร์หรือบันทึกไฟล์
+  Future<void> _createAndShareCsv() async {
     try {
       final file = await _exportService.exportRemindersToCsv(_filteredItems());
 
@@ -75,6 +78,23 @@ class _ExportPageState extends State<ExportPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('ไม่สามารถแชร์ไฟล์ CSV ได้')),
+      );
+    }
+  }
+
+  /// สร้างไฟล์ PDF รายงาน — ยังไม่เปิด share ในรอบนี้
+  Future<void> _createPdf() async {
+    try {
+      await _exportService.exportRemindersToPdf(_filteredItems());
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('สร้างไฟล์ PDF แล้ว ($_pdfFileName)')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ไม่สามารถสร้างไฟล์ PDF ได้')),
       );
     }
   }
@@ -118,7 +138,7 @@ class _ExportPageState extends State<ExportPage> {
                     ),
                     items: const [
                       DropdownMenuItem(
-                        value: 'PDF อ่านง่าย',
+                        value: _pdfFormat,
                         child: Text('PDF อ่านง่าย'),
                       ),
                       DropdownMenuItem(
@@ -193,7 +213,8 @@ class _ExportPageState extends State<ExportPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            'CSV ($_csvFileName) จะสร้างแล้วเปิดหน้าต่างแชร์ให้บันทึกหรือส่งต่อ',
+            'PDF ($_pdfFileName) จะบันทึกในโฟลเดอร์เอกสารของแอป · '
+            'CSV ($_csvFileName) จะสร้างแล้วเปิดหน้าต่างแชร์',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
