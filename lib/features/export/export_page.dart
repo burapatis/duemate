@@ -46,14 +46,14 @@ class _ExportPageState extends State<ExportPage> {
     }).toList();
   }
 
-  /// สร้างไฟล์ export ตามรูปแบบที่เลือก — CSV แชร์ได้, PDF สร้างไฟล์ในเครื่อง
+  /// สร้างไฟล์ export ตามรูปแบบที่เลือก — CSV/PDF สร้างแล้วเปิด share sheet
   Future<void> _createExportFile() async {
     if (_selectedFileFormat == _csvFormat) {
       await _createAndShareCsv();
       return;
     }
 
-    await _createPdf();
+    await _createAndSharePdf();
   }
 
   /// สร้างไฟล์ CSV แล้วเปิด share sheet ให้ผู้ใช้แชร์หรือบันทึกไฟล์
@@ -82,19 +82,28 @@ class _ExportPageState extends State<ExportPage> {
     }
   }
 
-  /// สร้างไฟล์ PDF รายงาน — ยังไม่เปิด share ในรอบนี้
-  Future<void> _createPdf() async {
+  /// สร้างไฟล์ PDF แล้วเปิด share sheet ให้ผู้ใช้แชร์หรือบันทึกไฟล์
+  Future<void> _createAndSharePdf() async {
     try {
-      await _exportService.exportRemindersToPdf(_filteredItems());
+      final file = await _exportService.exportRemindersToPdf(_filteredItems());
+
+      // แชร์ไฟล์ PDF — รายการว่างได้
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          fileNameOverrides: [_pdfFileName],
+          subject: 'DueMate — รายงานเอกสาร',
+        ),
+      );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('สร้างไฟล์ PDF แล้ว ($_pdfFileName)')),
+        const SnackBar(content: Text('เปิดหน้าต่างแชร์ไฟล์ PDF แล้ว')),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ไม่สามารถสร้างไฟล์ PDF ได้')),
+        const SnackBar(content: Text('ไม่สามารถแชร์ไฟล์ PDF ได้')),
       );
     }
   }
@@ -213,8 +222,8 @@ class _ExportPageState extends State<ExportPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            'PDF ($_pdfFileName) จะบันทึกในโฟลเดอร์เอกสารของแอป · '
-            'CSV ($_csvFileName) จะสร้างแล้วเปิดหน้าต่างแชร์',
+            'PDF ($_pdfFileName) และ CSV ($_csvFileName) '
+            'จะสร้างแล้วเปิดหน้าต่างแชร์ให้บันทึกหรือส่งต่อ',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
