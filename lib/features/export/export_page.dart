@@ -35,9 +35,14 @@ class _ExportPageState extends State<ExportPage> {
   /// คำอธิบายสั้น ๆ ตามรูปแบบไฟล์ที่เลือก
   String get _formatDescription {
     return _selectedFileFormat == _csvFormat
-        ? 'เหมาะสำหรับเปิดใน Excel, Numbers หรือ Google Sheets'
-        : 'เหมาะสำหรับอ่านง่ายหรือส่งให้ผู้อื่นดู';
+        ? 'ไฟล์ตาราง — เหมาะสำหรับเปิดใน Excel, Numbers หรือ Google Sheets'
+        : 'ไฟล์อ่านง่าย — เหมาะสำหรับส่งให้ผู้อื่นดู';
   }
+
+  /// จำนวนรายการที่จะส่งออกตาม scope ที่เลือก
+  int get _exportCount => _filteredItems().length;
+
+  String get _exportCountLabel => 'จะส่งออก $_exportCount รายการ';
 
   /// กรองรายการตามขอบเขตที่ผู้ใช้เลือก
   List<ReminderItem> _filteredItems() {
@@ -124,6 +129,10 @@ class _ExportPageState extends State<ExportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final mutedStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('ส่งออก'),
@@ -225,6 +234,8 @@ class _ExportPageState extends State<ExportPage> {
                       });
                     },
                   ),
+                  const SizedBox(height: 8),
+                  Text(_exportCountLabel, style: mutedStyle),
                 ],
               ),
             ),
@@ -243,9 +254,9 @@ class _ExportPageState extends State<ExportPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            'ไฟล์จะเปิดหน้าต่างแชร์ให้บันทึกหรือส่งต่อ '
-            '($_csvFileName / $_pdfFileName)',
-            style: Theme.of(context).textTheme.bodySmall,
+            'หลังจากสร้างไฟล์แล้ว คุณสามารถเลือกบันทึกหรือส่งต่อผ่านแอปที่รองรับ '
+            'เช่น Files, Line, Gmail',
+            style: mutedStyle,
           ),
         ],
       ),

@@ -112,7 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('⚙️ ตั้งค่าและความเป็นส่วนตัว'),
+        title: const Text('ตั้งค่าและความเป็นส่วนตัว'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(ReminderUi.pagePadding),
@@ -124,20 +124,29 @@ class _SettingsPageState extends State<SettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '🔒 ความเป็นส่วนตัว',
+                    'ความเป็นส่วนตัวและข้อควรทราบ',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   const Text('• ข้อมูลหลักเก็บอยู่ในเครื่องนี้'),
                   const SizedBox(height: 4),
-                  const Text(
-                    '• ข้อมูลหลักไม่อัปโหลดออกจากเครื่องในเวอร์ชันนี้',
-                  ),
+                  const Text('• ข้อมูลไม่อัปโหลดออกจากเครื่อง'),
                   const SizedBox(height: 4),
                   const Text('• ไม่บังคับสมัครสมาชิก'),
                   const SizedBox(height: 4),
                   const Text(
                     '• ไม่เก็บเลขบัตรประชาชน เลขพาสปอร์ต หรือภาพเอกสารสำคัญ',
+                  ),
+                  const SizedBox(height: ReminderUi.sectionGap),
+                  Text(
+                    'DueMate เป็นเครื่องมือช่วยบันทึกและเตือน '
+                    'ไม่ใช่บริการทางกฎหมาย การเงิน ราชการ หรือประกันภัย',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'บันทึกรายการ · แจ้งเตือนตามวันที่ · ส่งออกเป็นไฟล์ได้',
+                    style: mutedStyle,
                   ),
                 ],
               ),
@@ -155,6 +164,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
+                  const Text(
+                    'คุณสามารถล้างข้อมูลทั้งหมดในเครื่องได้จากหน้านี้',
+                  ),
+                  const SizedBox(height: 4),
                   const Text(
                     'ใช้เมื่อต้องการเริ่มต้นใหม่ รายการที่ล้างแล้วไม่สามารถกู้คืนได้',
                   ),
@@ -179,61 +192,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ความสามารถของแอป',
+                    'เกี่ยวกับ DueMate',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    '• รายการที่เพิ่มไว้จะยังอยู่หลังปิดและเปิดแอปใหม่',
-                  ),
-                  const SizedBox(height: 4),
-                  const Text('• แจ้งเตือนตามวันครบกำหนดที่ตั้งไว้'),
-                  const SizedBox(height: 4),
-                  const Text('• ส่งออกรายการเป็น CSV หรือ PDF ได้'),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: ReminderUi.sectionGap),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(ReminderUi.cardPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '📋 ข้อจำกัดความรับผิด',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: ReminderUi.sectionGap),
-                  Text(
-                    'DueMate เป็นเครื่องมือช่วยบันทึกและเตือนตามข้อมูลที่ผู้ใช้กรอกเอง ไม่ใช่บริการทางกฎหมาย การเงิน ราชการ หรือประกันภัย',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: ReminderUi.sectionGap),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(ReminderUi.cardPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'ℹ️ เกี่ยวกับ DueMate',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'เวอร์ชัน 0.6.0',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 4),
                   Text(
                     'แอปช่วยบันทึกและเตือนวันครบกำหนดเอกสารสำคัญ',
-                    style: mutedStyle,
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton(
@@ -245,6 +210,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     'ใช้ตรวจว่าเครื่องอนุญาตให้แจ้งเตือนได้',
                     style: mutedStyle,
                   ),
+                  const SizedBox(height: 8),
+                  Text('0.6.0', style: mutedStyle),
                 ],
               ),
             ),
