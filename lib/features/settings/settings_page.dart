@@ -15,13 +15,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final _storage = LocalReminderStorage();
   final _notificationService = NotificationService();
 
-  void _showComingSoon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('จะพัฒนาในเวอร์ชันถัดไป')),
-    );
-  }
-
-  /// ทดสอบส่ง local notification ผ่าน NotificationService
+  /// ส่งการแจ้งเตือนตัวอย่างเพื่อตรวจว่าเครื่องอนุญาตให้แจ้งเตือนได้
   Future<void> _testNotification() async {
     try {
       final initialized = await _notificationService.initialize();
@@ -38,12 +32,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ส่งแจ้งเตือนทดสอบแล้ว')),
+        const SnackBar(content: Text('ส่งการแจ้งเตือนตัวอย่างแล้ว')),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ไม่สามารถส่งแจ้งเตือนทดสอบได้')),
+        const SnackBar(content: Text('ไม่สามารถส่งการแจ้งเตือนได้')),
       );
     }
   }
@@ -53,9 +47,9 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('ล้างข้อมูลทดสอบ?'),
+          title: const Text('ล้างข้อมูลทั้งหมดในเครื่อง?'),
           content: const Text(
-            'รายการที่เพิ่มไว้ในเครื่องนี้จะถูกล้าง และแอปจะกลับไปใช้รายการตัวอย่างเริ่มต้น',
+            'รายการที่บันทึกไว้และการแจ้งเตือนที่ตั้งไว้จะถูกลบจากเครื่องนี้',
           ),
           actions: [
             TextButton(
@@ -86,13 +80,13 @@ class _SettingsPageState extends State<SettingsPage> {
         SnackBar(
           content: Text(
             notificationsCancelled
-                ? 'ล้างข้อมูลทดสอบและการแจ้งเตือนแล้ว'
-                : 'ล้างข้อมูลทดสอบแล้ว แต่ยังยกเลิกการแจ้งเตือนไม่สำเร็จ',
+                ? 'ล้างข้อมูลและการแจ้งเตือนแล้ว'
+                : 'ล้างข้อมูลแล้ว แต่ยังยกเลิกการแจ้งเตือนไม่สำเร็จ',
           ),
         ),
       );
 
-      // แจ้ง Home ให้รีเซ็ต state กลับเป็น mock เริ่มต้น
+      // แจ้ง Home ให้รีเซ็ต state กลับเป็นรายการเริ่มต้น
       Navigator.of(context).pop(true);
     } catch (_) {
       if (!mounted) return;
@@ -104,6 +98,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final mutedStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('⚙️ ตั้งค่าและความเป็นส่วนตัว'),
@@ -124,12 +122,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 8),
                   const Text('• ข้อมูลหลักเก็บอยู่ในเครื่องนี้'),
                   const SizedBox(height: 4),
-                  const Text('• DueMate v0.1.0 ยังไม่ส่งข้อมูลเอกสารขึ้น cloud'),
+                  const Text(
+                    '• ข้อมูลหลักไม่อัปโหลดออกจากเครื่องในเวอร์ชันนี้',
+                  ),
                   const SizedBox(height: 4),
                   const Text('• ไม่บังคับสมัครสมาชิก'),
                   const SizedBox(height: 4),
                   const Text(
-                    '• ไม่เก็บเลขบัตรประชาชน เลขพาสปอร์ต หรือภาพเอกสารสำคัญใน MVP',
+                    '• ไม่เก็บเลขบัตรประชาชน เลขพาสปอร์ต หรือภาพเอกสารสำคัญ',
                   ),
                 ],
               ),
@@ -143,17 +143,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '🧪 ข้อมูลทดสอบ',
+                    'ล้างข้อมูลในเครื่อง',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'ใช้สำหรับล้างรายการที่บันทึกไว้ในเครื่องระหว่างทดสอบแอป',
+                    'ใช้เมื่อต้องการเริ่มต้นใหม่ ข้อมูลที่ล้างแล้วไม่สามารถกู้คืนได้',
                   ),
                   const SizedBox(height: ReminderUi.sectionGap),
                   OutlinedButton(
                     onPressed: _confirmClearTestData,
-                    child: const Text('ล้างข้อมูลทดสอบในเครื่อง'),
+                    child: const Text('ล้างข้อมูลทั้งหมดในเครื่อง'),
                   ),
                 ],
               ),
@@ -167,15 +167,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '⚠️ ข้อจำกัดของ v0.1.0',
+                    'ความสามารถของแอป',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  const Text('• ข้อมูลที่เพิ่มเองยังเป็นข้อมูลชั่วคราว'),
+                  const Text(
+                    '• รายการที่เพิ่มไว้จะยังอยู่หลังปิดและเปิดแอปใหม่',
+                  ),
                   const SizedBox(height: 4),
-                  const Text('• ปิดแอปแล้วข้อมูลที่เพิ่มเองอาจหายได้'),
+                  const Text('• แจ้งเตือนตามวันครบกำหนดที่ตั้งไว้'),
                   const SizedBox(height: 4),
-                  const Text('• แจ้งเตือนตอนนี้เป็นแบบทดสอบเท่านั้น ยังไม่เตือนตามวันครบกำหนดจริง'),
+                  const Text('• ส่งออกรายการเป็น CSV หรือ PDF ได้'),
                 ],
               ),
             ),
@@ -213,25 +215,23 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'เวอร์ชัน 0.1.0 (MVP)',
+                    'เวอร์ชัน 0.6.0',
                     style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'แอปช่วยบันทึกและเตือนวันครบกำหนดเอกสารสำคัญ',
+                    style: mutedStyle,
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton(
                     onPressed: _testNotification,
-                    child: const Text('ทดสอบแจ้งเตือน'),
+                    child: const Text('ลองส่งการแจ้งเตือน'),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'ใช้สำหรับทดสอบระบบแจ้งเตือนระหว่างพัฒนา ยังไม่ใช่การเตือนตามวันครบกำหนดจริง',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: ReminderUi.sectionGap),
-                  OutlinedButton(
-                    onPressed: _showComingSoon,
-                    child: const Text('ดูข้อมูลแอปเพิ่มเติม'),
+                    'ใช้ตรวจว่าเครื่องอนุญาตให้แจ้งเตือนได้',
+                    style: mutedStyle,
                   ),
                 ],
               ),

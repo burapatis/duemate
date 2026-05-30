@@ -315,7 +315,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'หมายเหตุ: ข้อมูลในหน้านี้เป็นข้อมูลจำลองสำหรับ v0.1.0',
+            'ข้อมูลหลักเก็บอยู่ในเครื่องนี้',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
