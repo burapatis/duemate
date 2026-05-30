@@ -36,6 +36,71 @@ class _AddReminderPageState extends State<AddReminderPage> {
 
   bool get _isEditing => widget.editItem != null;
 
+  /// โหมด Edit เท่านั้น — เปรียบเทียบฟอร์มกับค่าเดิม
+  bool get _hasUnsavedChanges {
+    if (!_isEditing) return false;
+
+    final original = widget.editItem!;
+    if (_titleController.text.trim() != original.title) return true;
+    if (_noteController.text.trim() != original.note) return true;
+    if (_selectedCategory != original.category) return true;
+    if (!_isSameCalendarDay(_dueDate, original.dueDate)) return true;
+    if (!_isSameReminderDays(_selectedReminderDays, original.reminderDays)) {
+      return true;
+    }
+    return false;
+  }
+
+  bool _isSameCalendarDay(DateTime? date, DateTime original) {
+    if (date == null) return false;
+    return date.year == original.year &&
+        date.month == original.month &&
+        date.day == original.day;
+  }
+
+  bool _isSameReminderDays(Set<int> current, List<int> original) {
+    if (current.length != original.length) return false;
+    return current.containsAll(original);
+  }
+
+  Future<bool?> _confirmDiscardChanges() {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('ยังไม่ได้บันทึกการแก้ไข'),
+          content: const Text(
+            'ถ้ากลับตอนนี้ ข้อมูลที่แก้ไขจะไม่ถูกบันทึก',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('กลับไปแก้ต่อ'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('ออกโดยไม่บันทึก'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// ปุ่มกลับ AppBar และ system back — เตือนเมื่อ Edit มี unsaved changes
+  Future<void> _handleBack() async {
+    if (!_isEditing || !_hasUnsavedChanges) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      return;
+    }
+
+    final shouldDiscard = await _confirmDiscardChanges();
+    if (shouldDiscard == true && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -119,14 +184,25 @@ class _AddReminderPageState extends State<AddReminderPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: !_isEditing || !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
       appBar: AppBar(
+        // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _handleBack,
+        ),
         title: Text(_isEditing ? '✏️ แก้ไขรายการ' : '➕ เพิ่มรายการ'),
       ),
-      body: GestureDetector(
-        // แตะพื้นที่ว่างเพื่อปิด keyboard — deferToChild ไม่แย่ง tap จาก TextField
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        behavior: HitTestBehavior.deferToChild,
+      body: TapRegion(
+        // ปิด keyboard เมื่อแตะนอกช่องกรอก — ไม่แย่ง tap จาก TextField (Android)
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         child: Form(
           key: _formKey,
           child: ListView(
@@ -278,6 +354,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
         ),
       ),
       ),
+    ),
     );
   }
 }

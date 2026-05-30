@@ -112,6 +112,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
+        // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         title: const Text('ตั้งค่าและความเป็นส่วนตัว'),
       ),
       body: ListView(
