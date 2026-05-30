@@ -48,19 +48,27 @@ class ReminderDetailPage extends StatelessWidget {
 
   /// ยืนยันแล้วลบรายการ — ส่ง reminder id กลับ parent เพื่ออัปเดต Home
   Future<void> _confirmDelete(BuildContext context) async {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final shouldDelete = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('ลบรายการนี้?'),
-          content: const Text('รายการนี้จะถูกลบออกจากเครื่องนี้'),
+          content: Text(
+            'คุณต้องการลบ "${item.title}" ออกจากเครื่องนี้หรือไม่',
+          ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('ยกเลิก'),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: colorScheme.error,
+                foregroundColor: colorScheme.onError,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
               child: const Text('ลบรายการ'),
             ),
           ],
@@ -80,6 +88,7 @@ class ReminderDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = _buildStatus(item.dueDate);
+    final errorColor = Theme.of(context).colorScheme.error;
 
     return Scaffold(
       appBar: AppBar(
@@ -158,7 +167,7 @@ class ReminderDetailPage extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: FilledButton.icon(
                   onPressed: () => _openEdit(context),
                   icon: const Icon(Icons.edit),
                   label: const Text('แก้ไข'),
@@ -166,9 +175,13 @@ class ReminderDetailPage extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: FilledButton.icon(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: errorColor,
+                    side: BorderSide(color: errorColor),
+                  ),
                   onPressed: () => _confirmDelete(context),
-                  icon: const Icon(Icons.delete_outline),
+                  icon: Icon(Icons.delete_outline, color: errorColor),
                   label: const Text('ลบ'),
                 ),
               ),

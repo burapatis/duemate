@@ -43,22 +43,29 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _confirmClearTestData() async {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final shouldClear = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('ล้างข้อมูลทั้งหมดในเครื่อง?'),
+          title: const Text('ลบข้อมูลทั้งหมดในเครื่อง?'),
           content: const Text(
-            'รายการที่บันทึกไว้และการแจ้งเตือนที่ตั้งไว้จะถูกลบจากเครื่องนี้',
+            'รายการทั้งหมดและการแจ้งเตือนที่ตั้งไว้จะถูกลบออกจากเครื่องนี้ '
+            'และไม่สามารถกู้คืนได้',
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('ยกเลิก'),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('ล้างข้อมูล'),
+              style: FilledButton.styleFrom(
+                backgroundColor: colorScheme.error,
+                foregroundColor: colorScheme.onError,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('ลบข้อมูลทั้งหมด'),
             ),
           ],
         );
@@ -101,6 +108,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final mutedStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
+    final errorColor = Theme.of(context).colorScheme.error;
 
     return Scaffold(
       appBar: AppBar(
@@ -148,10 +156,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'ใช้เมื่อต้องการเริ่มต้นใหม่ ข้อมูลที่ล้างแล้วไม่สามารถกู้คืนได้',
+                    'ใช้เมื่อต้องการเริ่มต้นใหม่ รายการที่ล้างแล้วไม่สามารถกู้คืนได้',
                   ),
                   const SizedBox(height: ReminderUi.sectionGap),
                   OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: errorColor,
+                      side: BorderSide(color: errorColor),
+                    ),
                     onPressed: _confirmClearTestData,
                     child: const Text('ล้างข้อมูลทั้งหมดในเครื่อง'),
                   ),
