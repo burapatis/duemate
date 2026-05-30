@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../services/export_service.dart';
 import '../home/reminder_item.dart';
@@ -43,7 +44,7 @@ class _ExportPageState extends State<ExportPage> {
     }).toList();
   }
 
-  /// สร้างไฟล์ export ตามรูปแบบที่เลือก — รอบนี้รองรับ CSV จริง
+  /// สร้างไฟล์ CSV แล้วเปิด share sheet ให้ผู้ใช้แชร์หรือบันทึกไฟล์
   Future<void> _createExportFile() async {
     if (_selectedFileFormat != _csvFormat) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -55,16 +56,25 @@ class _ExportPageState extends State<ExportPage> {
     }
 
     try {
-      await _exportService.exportRemindersToCsv(_filteredItems());
+      final file = await _exportService.exportRemindersToCsv(_filteredItems());
+
+      // แชร์ไฟล์ CSV — รายการว่างได้ (มีแค่ header)
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          fileNameOverrides: [_csvFileName],
+          subject: 'DueMate — รายการเอกสาร',
+        ),
+      );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('สร้างไฟล์ CSV แล้ว ($_csvFileName)')),
+        const SnackBar(content: Text('เปิดหน้าต่างแชร์ไฟล์ CSV แล้ว')),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ไม่สามารถสร้างไฟล์ CSV ได้')),
+        const SnackBar(content: Text('ไม่สามารถแชร์ไฟล์ CSV ได้')),
       );
     }
   }
@@ -183,7 +193,7 @@ class _ExportPageState extends State<ExportPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            'CSV จะบันทึกเป็น $_csvFileName ในโฟลเดอร์เอกสารของแอป',
+            'CSV ($_csvFileName) จะสร้างแล้วเปิดหน้าต่างแชร์ให้บันทึกหรือส่งต่อ',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
