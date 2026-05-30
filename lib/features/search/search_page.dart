@@ -66,9 +66,17 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  String _resultCountLabel(int count) {
+    if (count == 0) return 'ไม่พบรายการ';
+    return 'พบ $count รายการ';
+  }
+
   @override
   Widget build(BuildContext context) {
     final results = _filteredItems();
+    final mutedStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -125,11 +133,21 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              ReminderUi.pagePadding,
+              0,
+              ReminderUi.pagePadding,
+              ReminderUi.sectionGap,
+            ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(_resultCountLabel(results.length), style: mutedStyle),
+            ),
+          ),
           Expanded(
             child: results.isEmpty
-                ? const Center(
-                    child: Text('ไม่พบรายการที่ตรงกับการค้นหา'),
-                  )
+                ? const _SearchEmptyState()
                 : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(
                       ReminderUi.pagePadding,
@@ -160,6 +178,45 @@ class _SearchPageState extends State<SearchPage> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SearchEmptyState extends StatelessWidget {
+  const _SearchEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    final mutedStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(ReminderUi.pagePadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 48,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'ไม่พบรายการที่ตรงกับการค้นหา',
+              style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'ลองเปลี่ยนคำค้นหา หรือเลือกหมวดทั้งหมด',
+              style: mutedStyle,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

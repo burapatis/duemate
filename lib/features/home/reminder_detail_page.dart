@@ -115,6 +115,8 @@ class ReminderDetailPage extends StatelessWidget {
                           ReminderUi.categoryLabel(item.category),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
+                        const SizedBox(height: 8),
+                        _StatusChip(label: status),
                       ],
                     ),
                   ),
@@ -140,8 +142,6 @@ class ReminderDetailPage extends StatelessWidget {
                     label: 'เตือนล่วงหน้า',
                     value: _buildReminderLabel(item.reminderDays),
                   ),
-                  const SizedBox(height: 8),
-                  _DetailRow(label: 'สถานะ', value: status),
                 ],
               ),
             ),
@@ -189,6 +189,33 @@ class ReminderDetailPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final (backgroundColor, foregroundColor) = switch (label) {
+      'เกินกำหนด' => (colorScheme.errorContainer, colorScheme.onErrorContainer),
+      'ใกล้ครบกำหนด' => (
+          colorScheme.tertiaryContainer,
+          colorScheme.onTertiaryContainer,
+        ),
+      _ => (colorScheme.secondaryContainer, colorScheme.onSecondaryContainer),
+    };
+
+    return Chip(
+      label: Text(label),
+      backgroundColor: backgroundColor,
+      labelStyle: TextStyle(color: foregroundColor, fontWeight: FontWeight.w600),
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
     );
   }
 }
