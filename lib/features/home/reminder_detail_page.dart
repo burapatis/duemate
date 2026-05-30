@@ -92,6 +92,13 @@ class ReminderDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          tooltip: 'กลับ',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         title: const Text('📄 รายละเอียดรายการ'),
       ),
       body: ListView(

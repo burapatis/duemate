@@ -80,6 +80,13 @@ class _SearchPageState extends State<SearchPage> {
 
     return Scaffold(
       appBar: AppBar(
+        // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          tooltip: 'กลับ',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         title: const Text('🔎 ค้นหาเอกสาร'),
       ),
       body: Column(
