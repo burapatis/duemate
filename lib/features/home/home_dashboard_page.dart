@@ -289,8 +289,19 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           const SizedBox(height: ReminderUi.blockGap),
           _SummaryCards(summary: summary),
           const SizedBox(height: ReminderUi.blockGap),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _openAddReminder,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Text('เพิ่มรายการใหม่'),
+              ),
+            ),
+          ),
+          const SizedBox(height: ReminderUi.blockGap),
           Text(
-            '🗂️ เอกสารใกล้ครบกำหนด',
+            'รายการเอกสารของคุณ',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
@@ -321,50 +332,59 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
             ),
           ),
           const SizedBox(height: ReminderUi.blockGap),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _openAddReminder,
-              icon: const Icon(Icons.add_circle_outline),
-              label: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Text('เพิ่มรายการใหม่'),
-              ),
-            ),
-          ),
-          const SizedBox(height: ReminderUi.sectionGap),
           Card(
-            child: Padding(
-              padding: const EdgeInsets.all(ReminderUi.cardPadding),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: [
-                  OutlinedButton(
-                    onPressed: _openSearch,
-                    child: const Text('🔎 ค้นหา'),
-                  ),
-                  OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ExportPage(items: _upcomingDocuments),
-                        ),
-                      );
-                    },
-                    child: const Text('📤 ส่งออก'),
-                  ),
-                  OutlinedButton(
-                    onPressed: _openSettings,
-                    child: const Text('⚙️ ตั้งค่า'),
-                  ),
-                ],
-              ),
+            child: Column(
+              children: [
+                _HomeActionTile(
+                  icon: Icons.search,
+                  label: 'ค้นหา',
+                  onTap: _openSearch,
+                ),
+                const Divider(height: 1),
+                _HomeActionTile(
+                  icon: Icons.ios_share,
+                  label: 'ส่งออก',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ExportPage(items: _upcomingDocuments),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                _HomeActionTile(
+                  icon: Icons.settings,
+                  label: 'ตั้งค่า',
+                  onTap: _openSettings,
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HomeActionTile extends StatelessWidget {
+  const _HomeActionTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(label),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     );
   }
 }
