@@ -25,6 +25,20 @@ class _ExportPageState extends State<ExportPage> {
   String _selectedFileFormat = 'PDF อ่านง่าย';
   String _selectedScope = 'ทั้งหมด';
 
+  /// ข้อความปุ่มตามรูปแบบไฟล์ที่เลือก
+  String get _shareButtonLabel {
+    return _selectedFileFormat == _csvFormat
+        ? 'สร้างและแชร์ CSV'
+        : 'สร้างและแชร์ PDF';
+  }
+
+  /// คำอธิบายสั้น ๆ ตามรูปแบบไฟล์ที่เลือก
+  String get _formatDescription {
+    return _selectedFileFormat == _csvFormat
+        ? 'เหมาะสำหรับเปิดใน Excel, Numbers หรือ Google Sheets'
+        : 'เหมาะสำหรับอ่านง่ายหรือส่งให้ผู้อื่นดู';
+  }
+
   /// กรองรายการตามขอบเขตที่ผู้ใช้เลือก
   List<ReminderItem> _filteredItems() {
     final now = DateTime.now();
@@ -123,7 +137,7 @@ class _ExportPageState extends State<ExportPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            'เลือกชนิดไฟล์และขอบเขตข้อมูลก่อนสร้างไฟล์',
+            'เลือกชนิดไฟล์และขอบเขตข้อมูลก่อนสร้างและแชร์ไฟล์',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -161,6 +175,13 @@ class _ExportPageState extends State<ExportPage> {
                         _selectedFileFormat = value;
                       });
                     },
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _formatDescription,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -213,17 +234,17 @@ class _ExportPageState extends State<ExportPage> {
             width: double.infinity,
             child: FilledButton.icon(
               onPressed: _createExportFile,
-              icon: const Icon(Icons.file_download_outlined),
-              label: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Text('สร้างไฟล์ตัวอย่าง'),
+              icon: const Icon(Icons.ios_share),
+              label: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Text(_shareButtonLabel),
               ),
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            'PDF ($_pdfFileName) และ CSV ($_csvFileName) '
-            'จะสร้างแล้วเปิดหน้าต่างแชร์ให้บันทึกหรือส่งต่อ',
+            'ไฟล์จะเปิดหน้าต่างแชร์ให้บันทึกหรือส่งต่อ '
+            '($_csvFileName / $_pdfFileName)',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
