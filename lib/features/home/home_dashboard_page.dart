@@ -349,7 +349,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => const ExportPage(),
+                          builder: (_) => ExportPage(items: _upcomingDocuments),
                         ),
                       );
                     },

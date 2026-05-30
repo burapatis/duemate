@@ -1,17 +1,73 @@
 import 'package:flutter/material.dart';
 
+import '../../services/export_service.dart';
+import '../home/reminder_item.dart';
 import '../home/reminder_ui.dart';
 
 class ExportPage extends StatefulWidget {
-  const ExportPage({super.key});
+  const ExportPage({super.key, required this.items});
+
+  final List<ReminderItem> items;
 
   @override
   State<ExportPage> createState() => _ExportPageState();
 }
 
 class _ExportPageState extends State<ExportPage> {
+  static const _csvFormat = 'CSV เปิดใน Excel';
+  static const _csvFileName = 'duemate_reminders.csv';
+
+  final _exportService = ExportService();
+
   String _selectedFileFormat = 'PDF อ่านง่าย';
   String _selectedScope = 'ทั้งหมด';
+
+  /// กรองรายการตามขอบเขตที่ผู้ใช้เลือก
+  List<ReminderItem> _filteredItems() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return widget.items.where((item) {
+      final due = DateTime(
+        item.dueDate.year,
+        item.dueDate.month,
+        item.dueDate.day,
+      );
+
+      return switch (_selectedScope) {
+        'เฉพาะรายการใกล้ครบกำหนด' =>
+          !due.isBefore(today) && due.difference(today).inDays <= 7,
+        'เฉพาะรายการเกินกำหนด' => due.isBefore(today),
+        _ => true,
+      };
+    }).toList();
+  }
+
+  /// สร้างไฟล์ export ตามรูปแบบที่เลือก — รอบนี้รองรับ CSV จริง
+  Future<void> _createExportFile() async {
+    if (_selectedFileFormat != _csvFormat) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ฟีเจอร์ส่งออก PDF จะพัฒนาในเวอร์ชันถัดไป'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      await _exportService.exportRemindersToCsv(_filteredItems());
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('สร้างไฟล์ CSV แล้ว ($_csvFileName)')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ไม่สามารถสร้างไฟล์ CSV ได้')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +84,7 @@ class _ExportPageState extends State<ExportPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            'เลือกชนิดไฟล์และขอบเขตข้อมูลก่อนสร้างไฟล์ตัวอย่าง',
+            'เลือกชนิดไฟล์และขอบเขตข้อมูลก่อนสร้างไฟล์',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -56,7 +112,7 @@ class _ExportPageState extends State<ExportPage> {
                         child: Text('PDF อ่านง่าย'),
                       ),
                       DropdownMenuItem(
-                        value: 'CSV เปิดใน Excel',
+                        value: _csvFormat,
                         child: Text('CSV เปิดใน Excel'),
                       ),
                     ],
@@ -117,14 +173,7 @@ class _ExportPageState extends State<ExportPage> {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: () {
-                // v0.1.0 มีไว้ทดสอบ flow หน้าจอ ยังไม่สร้างไฟล์จริง
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('ฟีเจอร์ส่งออกไฟล์จะพัฒนาในเวอร์ชันถัดไป'),
-                  ),
-                );
-              },
+              onPressed: _createExportFile,
               icon: const Icon(Icons.file_download_outlined),
               label: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10),
@@ -134,7 +183,7 @@ class _ExportPageState extends State<ExportPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            'v0.1.0 ยังไม่สร้างไฟล์จริง เพื่อทดสอบโครงหน้าจอเท่านั้น',
+            'CSV จะบันทึกเป็น $_csvFileName ในโฟลเดอร์เอกสารของแอป',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
