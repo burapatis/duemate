@@ -40,7 +40,11 @@ class _AddReminderPageState extends State<AddReminderPage> {
   void initState() {
     super.initState();
     final editItem = widget.editItem;
-    if (editItem == null) return;
+    if (editItem == null) {
+      // Add ใหม่ — เลือกเตือน 7 วันเป็นค่าเริ่มต้น
+      _selectedReminderDays.add(7);
+      return;
+    }
 
     // โหมดแก้ไข — แสดงข้อมูลเดิมในฟอร์ม
     _titleController.text = editItem.title;
@@ -201,6 +205,13 @@ class _AddReminderPageState extends State<AddReminderPage> {
                     Text(
                       '🔔 ตั้งค่าเตือนล่วงหน้า',
                       style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'เลือกอย่างน้อย 1 รายการ หากต้องการให้แอปแจ้งเตือน',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     // เลือกได้หลายค่าเพื่อรองรับการแจ้งเตือนหลายช่วงเวลา

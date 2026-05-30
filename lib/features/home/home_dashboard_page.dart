@@ -140,8 +140,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
       SnackBar(
         content: Text(
           notificationOk
-              ? 'บันทึกการแก้ไขแล้ว และปรับการแจ้งเตือนแล้ว'
-              : 'บันทึกการแก้ไขแล้ว แต่ยังปรับการแจ้งเตือนไม่สำเร็จ',
+              ? 'บันทึกแล้ว และตั้งเตือนแล้ว'
+              : 'บันทึกแล้ว แต่ตั้งเตือนไม่สำเร็จ',
         ),
       ),
     );
@@ -207,11 +207,11 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
       SnackBar(
         content: Text(switch (scheduleResult) {
           ScheduleRemindersResult.success =>
-            'บันทึกรายการแล้ว และตั้งแจ้งเตือนตามวันที่เลือกแล้ว',
+            'บันทึกแล้ว และตั้งเตือนแล้ว',
           ScheduleRemindersResult.noSchedulableDates =>
-            'บันทึกรายการแล้ว แต่ยังไม่มีวันที่แจ้งเตือนที่ตั้งได้',
+            'บันทึกแล้ว แต่ยังไม่ได้ตั้งเตือน',
           ScheduleRemindersResult.partialFailure =>
-            'บันทึกรายการแล้ว แต่ตั้งแจ้งเตือนบางรายการไม่สำเร็จ',
+            'บันทึกแล้ว แต่ตั้งเตือนไม่สำเร็จ',
         }),
       ),
     );
