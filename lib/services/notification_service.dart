@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -43,13 +44,69 @@ class NotificationService {
   bool _initialized = false;
   bool _timezoneReady = false;
 
-  /// โหลด timezone database — ใช้ Asia/Bangkok ชั่วคราวสำหรับผู้ใช้หลักในไทย
+  /// โหลด timezone database — ใช้ timezone ตาม offset ของเครื่อง (ไม่ล็อก Bangkok)
   void _initTimeZone() {
     if (_timezoneReady) return;
 
     tz_data.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Asia/Bangkok'));
+    tz.setLocalLocation(resolveDeviceLocation());
     _timezoneReady = true;
+  }
+
+  /// หา [tz.Location] จาก timezone offset ของเครื่อง — ใช้ตอน schedule แจ้งเตือน
+  static tz.Location resolveDeviceLocation() {
+    final offset = DateTime.now().timeZoneOffset;
+    final candidates = locationNamesForOffset(offset);
+
+    for (final name in candidates) {
+      try {
+        return tz.getLocation(name);
+      } catch (_) {
+        continue;
+      }
+    }
+
+    debugPrint(
+      'DueMate: ใช้ UTC เป็น timezone fallback (offset: $offset)',
+    );
+    return tz.UTC;
+  }
+
+  /// รายชื่อ IANA timezone ที่ลองตามลำดับ — offset ชั่วโมงเต็มใช้ Etc/GMT
+  @visibleForTesting
+  static List<String> locationNamesForOffset(Duration offset) {
+    final totalMinutes = offset.inMinutes;
+
+    if (totalMinutes == 0) {
+      return const ['UTC'];
+    }
+
+    // offset ไม่เต็มชั่วโมง — ใช้ zone ที่รู้จักก่อน (เช่น อินเดีย +5:30)
+    final named = _namedLocationForOffsetMinutes(totalMinutes);
+    if (named != null) {
+      return [named, 'UTC'];
+    }
+
+    final hours = totalMinutes ~/ 60;
+    if (totalMinutes % 60 != 0) {
+      return const ['UTC'];
+    }
+
+    // IANA Etc/GMT: GMT-7 = UTC+7 (เครื่องหมายกลับกับ offset)
+    final etcGmt = hours > 0 ? 'Etc/GMT-$hours' : 'Etc/GMT+${hours.abs()}';
+    return [etcGmt, 'Asia/Bangkok', 'UTC'];
+  }
+
+  static String? _namedLocationForOffsetMinutes(int totalMinutes) {
+    const known = <int, String>{
+      330: 'Asia/Kolkata',
+      345: 'Asia/Kathmandu',
+      390: 'Asia/Yangon',
+      525: 'Australia/Eucla',
+      570: 'Australia/Darwin',
+      630: 'Australia/Lord_Howe',
+    };
+    return known[totalMinutes];
   }
 
   /// มั่นใจว่า plugin พร้อมใช้งานก่อน schedule/cancel

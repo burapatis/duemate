@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../services/due_mate_services.dart';
 import '../../services/local_reminder_storage.dart';
 import '../../services/notification_service.dart';
 import '../add/add_reminder_page.dart';
@@ -12,15 +13,18 @@ import 'reminder_item.dart';
 import 'reminder_ui.dart';
 
 class HomeDashboardPage extends StatefulWidget {
-  const HomeDashboardPage({super.key});
+  const HomeDashboardPage({super.key, required this.services});
+
+  final DueMateServices services;
 
   @override
   State<HomeDashboardPage> createState() => _HomeDashboardPageState();
 }
 
 class _HomeDashboardPageState extends State<HomeDashboardPage> {
-  final _storage = LocalReminderStorage();
-  final _notificationService = NotificationService();
+  LocalReminderStorage get _storage => widget.services.storage;
+  NotificationService get _notificationService =>
+      widget.services.notificationService;
   bool _isLoading = true;
   List<ReminderItem> _upcomingDocuments = [];
 
@@ -37,13 +41,24 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     });
 
     try {
-      final stored = await _storage.loadReminders();
+      final result = await _storage.loadReminders();
 
       if (!mounted) return;
       setState(() {
-        _upcomingDocuments = stored;
+        _upcomingDocuments = result.items;
         _isLoading = false;
       });
+
+      if (result.skippedCount > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'บางรายการโหลดไม่ได้ (${result.skippedCount} รายการ) '
+              'รายการที่เหลือยังใช้งานได้',
+            ),
+          ),
+        );
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -78,7 +93,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   Future<void> _openSettings() async {
     final didClear = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => const SettingsPage(),
+        builder: (_) => SettingsPage(services: widget.services),
       ),
     );
 
@@ -104,9 +119,19 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
   /// อัปเดตรายการใน state, บันทึกลงเครื่อง และปรับการแจ้งเตือน
   Future<void> _updateReminder(ReminderItem updated) async {
-    final previous = _upcomingDocuments.firstWhere(
-      (item) => item.id == updated.id,
-    );
+    final index =
+        _upcomingDocuments.indexWhere((item) => item.id == updated.id);
+    if (index < 0) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ไม่พบรายการนี้ กรุณากลับไปหน้าหลักแล้วลองใหม่'),
+        ),
+      );
+      return;
+    }
+
+    final previous = _upcomingDocuments[index];
 
     setState(() {
       _upcomingDocuments = _upcomingDocuments
@@ -152,21 +177,40 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   Future<void> _openReminderDetail(ReminderItem item) async {
     final result = await Navigator.of(context).push<Object>(
       MaterialPageRoute(
-        builder: (_) => ReminderDetailPage(item: item),
+        builder: (_) => ReminderDetailPage(
+          item: item,
+          notificationService: widget.services.notificationService,
+        ),
       ),
     );
 
     await _handleNavigationResult(result);
   }
 
+  /// โหลดรายการจากเครื่องมาอัปเดต Home โดยไม่แสดง loading ทั้งหน้า
+  Future<void> _syncRemindersFromStorage() async {
+    try {
+      final result = await _storage.loadReminders();
+      if (!mounted) return;
+      setState(() {
+        _upcomingDocuments = result.items;
+      });
+    } catch (_) {
+      // คงรายการเดิมไว้ถ้าโหลดไม่สำเร็จ
+    }
+  }
+
   Future<void> _openSearch() async {
-    final result = await Navigator.of(context).push<Object>(
+    await Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => SearchPage(items: _upcomingDocuments),
+        builder: (_) => SearchPage(
+          services: widget.services,
+          onItemChanged: _handleNavigationResult,
+        ),
       ),
     );
 
-    await _handleNavigationResult(result);
+    await _syncRemindersFromStorage();
   }
 
   Future<void> _openAddReminder() async {
@@ -372,7 +416,10 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => ExportPage(items: _upcomingDocuments),
+                        builder: (_) => ExportPage(
+                          items: _upcomingDocuments,
+                          exportService: widget.services.exportService,
+                        ),
                       ),
                     );
                   },

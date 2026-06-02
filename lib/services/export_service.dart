@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -10,12 +11,52 @@ import '../features/home/reminder_item.dart';
 
 /// สร้างไฟล์ export รายการ ReminderItem เป็น CSV/PDF
 class ExportService {
-  static const _csvFileName = 'duemate_reminders.csv';
-  static const _pdfFileName = 'duemate_reminders.pdf';
+  static const _exportNamePrefix = 'duemate_reminders';
+  static const _pdfFontRegularAsset = 'assets/fonts/Sarabun-Regular.ttf';
+  static const _pdfFontBoldAsset = 'assets/fonts/Sarabun-Bold.ttf';
+
+  static Future<pw.ThemeData>? _pdfThemeFuture;
+
+  /// สร้างชื่อไฟล์ export แบบมี timestamp — ไม่ทับไฟล์เดิมเมื่อส่งออกซ้ำ
+  @visibleForTesting
+  static String buildExportFileName({
+    required String extension,
+    required DateTime generatedAt,
+  }) {
+    final year = generatedAt.year.toString().padLeft(4, '0');
+    final month = generatedAt.month.toString().padLeft(2, '0');
+    final day = generatedAt.day.toString().padLeft(2, '0');
+    final hour = generatedAt.hour.toString().padLeft(2, '0');
+    final minute = generatedAt.minute.toString().padLeft(2, '0');
+
+    return '${_exportNamePrefix}_$year$month${day}_$hour$minute.$extension';
+  }
 
   /// ใช้ใน unit test เท่านั้น — กำหนดโฟลเดอร์ export โดยตรง
   @visibleForTesting
   Future<Directory> Function()? exportDirectoryForTesting;
+
+  /// โหลด theme PDF พร้อมฟอnt Sarabun สำหรับภาษาไทย (โหลดครั้งเดียว)
+  Future<pw.ThemeData> _loadPdfTheme() {
+    _pdfThemeFuture ??= _loadPdfThemeOnce();
+    return _pdfThemeFuture!;
+  }
+
+  static Future<pw.ThemeData> _loadPdfThemeOnce() async {
+    final regularData = await rootBundle.load(_pdfFontRegularAsset);
+    final boldData = await rootBundle.load(_pdfFontBoldAsset);
+
+    return pw.ThemeData.withFont(
+      base: pw.Font.ttf(regularData),
+      bold: pw.Font.ttf(boldData),
+    );
+  }
+
+  /// รีเซ็ต cache ฟอnt — ใช้ใน test เท่านั้น
+  @visibleForTesting
+  static void resetPdfThemeCacheForTesting() {
+    _pdfThemeFuture = null;
+  }
 
   /// โฟลเดอร์สำหรับบันทึกไฟล์ export — ใช้ documents ก่อน แล้ว fallback เป็น temp
   Future<Directory> _exportDirectory() async {
@@ -39,7 +80,16 @@ class ExportService {
   }
 
   /// ส่งออกรายการเป็น CSV — คืนไฟล์ที่สร้าง (list ว่างได้ มีแค่ header)
-  Future<File> exportRemindersToCsv(List<ReminderItem> reminders) async {
+  Future<File> exportRemindersToCsv(
+    List<ReminderItem> reminders, {
+    DateTime? generatedAt,
+  }) async {
+    final exportedAt = generatedAt ?? DateTime.now();
+    final fileName = buildExportFileName(
+      extension: 'csv',
+      generatedAt: exportedAt,
+    );
+
     final rows = <List<String>>[
       const [
         'id',
@@ -65,7 +115,7 @@ class ExportService {
 
     final csvContent = csv.encode(rows);
     final directory = await _exportDirectory();
-    final file = File('${directory.path}/$_csvFileName');
+    final file = File('${directory.path}/$fileName');
     // UTF-8 BOM ช่วยให้ Excel บางเครื่องอ่านภาษาไทยได้ถูกต้อง
     await file.writeAsString('\uFEFF$csvContent');
     return file;
@@ -164,20 +214,28 @@ class ExportService {
     );
   }
 
-  /// ส่งออกรายการเป็น PDF รายงาน — คืนไฟล์ที่สร้าง (list ว่างได้)
-  /// ใช้ฟอnt default ของ pdf package (offline ได้) — ภาษาไทยจะปรับใน step ถัดไป
-  Future<File> exportRemindersToPdf(List<ReminderItem> reminders) async {
+  /// ส่งออกรายการเป็น PDF รายงาน — ฝังฟอnt Sarabun สำหรับภาษาไทย
+  Future<File> exportRemindersToPdf(
+    List<ReminderItem> reminders, {
+    DateTime? generatedAt,
+  }) async {
     try {
-      final generatedAt = DateTime.now();
+      final exportedAt = generatedAt ?? DateTime.now();
+      final fileName = buildExportFileName(
+        extension: 'pdf',
+        generatedAt: exportedAt,
+      );
+      final pdfTheme = await _loadPdfTheme();
       final document = pw.Document();
 
       document.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(40),
+          theme: pdfTheme,
           build: (context) {
             return [
-              _buildPdfHeader(reminders.length, generatedAt),
+              _buildPdfHeader(reminders.length, exportedAt),
               if (reminders.isEmpty)
                 pw.Padding(
                   padding: const pw.EdgeInsets.symmetric(vertical: 24),
@@ -200,7 +258,7 @@ class ExportService {
       }
 
       final directory = await _exportDirectory();
-      final file = File('${directory.path}/$_pdfFileName');
+      final file = File('${directory.path}/$fileName');
       await file.writeAsBytes(bytes);
 
       if (!await file.exists()) {

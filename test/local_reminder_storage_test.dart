@@ -30,25 +30,47 @@ void main() {
     ];
 
     await storage.saveReminders(items);
-    final loaded = await storage.loadReminders();
+    final result = await storage.loadReminders();
 
-    expect(loaded.length, 2);
-    expect(loaded[0].id, 'save-001');
-    expect(loaded[1].title, 'ใบขับขี่');
+    expect(result.items.length, 2);
+    expect(result.skippedCount, 0);
+    expect(result.items[0].id, 'save-001');
+    expect(result.items[1].title, 'ใบขับขี่');
   });
 
   test('loadReminders คืน [] เมื่อยังไม่มีข้อมูล', () async {
-    final loaded = await storage.loadReminders();
-    expect(loaded, isEmpty);
+    final result = await storage.loadReminders();
+    expect(result.items, isEmpty);
+    expect(result.skippedCount, 0);
   });
 
-  test('loadReminders คืน [] เมื่อ JSON เสีย', () async {
+  test('loadReminders คืน [] เมื่อ JSON ทั้งก้อนเสีย', () async {
     SharedPreferences.setMockInitialValues({
       'duemate_reminders_v1': '{not-valid-json',
     });
 
-    final loaded = await storage.loadReminders();
-    expect(loaded, isEmpty);
+    final result = await storage.loadReminders();
+    expect(result.items, isEmpty);
+    expect(result.skippedCount, 0);
+  });
+
+  test('loadReminders ข้ามรายการเสีย แต่คืนรายการที่โหลดได้', () async {
+    SharedPreferences.setMockInitialValues({
+      'duemate_reminders_v1': '''
+[
+  {"id":"good-001","title":"พ.ร.บ. รถยนต์","category":"รถ","dueDate":"2026-06-15T00:00:00.000","reminderDays":[30,7],"note":"","priority":"สูง"},
+  {"id":"bad-001","title":"เสีย","category":"รถ"},
+  {"id":"good-002","title":"ใบขับขี่","category":"รถ","dueDate":"2026-07-01T00:00:00.000","reminderDays":[7],"note":"","priority":"กลาง"}
+]
+''',
+    });
+
+    final result = await storage.loadReminders();
+
+    expect(result.items.length, 2);
+    expect(result.skippedCount, 1);
+    expect(result.items[0].id, 'good-001');
+    expect(result.items[1].title, 'ใบขับขี่');
   });
 
   test('clearReminders ล้างข้อมูลแล้ว load ได้ []', () async {
@@ -57,8 +79,8 @@ void main() {
     ]);
 
     await storage.clearReminders();
-    final loaded = await storage.loadReminders();
+    final result = await storage.loadReminders();
 
-    expect(loaded, isEmpty);
+    expect(result.items, isEmpty);
   });
 }

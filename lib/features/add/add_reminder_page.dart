@@ -271,10 +271,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
       appBar: AppBar(
         // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
         automaticallyImplyLeading: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _handleBack,
-        ),
+        leading: ReminderUi.backButton(onPressed: _handleBack),
         title: Text(_isEditing ? '✏️ แก้ไขรายการ' : '➕ เพิ่มรายการ'),
       ),
       body: TapRegion(

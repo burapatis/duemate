@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// ค่ามาตรฐาน UI และข้อความหมวดเอกสาร (v0.1.0)
 class ReminderUi {
   static const double pagePadding = 16;
@@ -33,5 +35,33 @@ class ReminderUi {
   static String filterCategoryLabel(String category) {
     if (category == 'ทั้งหมด') return category;
     return categoryLabel(category);
+  }
+
+  /// ปุ่มกลับพร้อม label สำหรับ screen reader
+  static Widget backButton({
+    required VoidCallback onPressed,
+    String label = 'กลับ',
+  }) {
+    return Semantics(
+      label: label,
+      button: true,
+      child: IconButton(
+        tooltip: label,
+        icon: const Icon(Icons.arrow_back),
+        onPressed: onPressed,
+      ),
+    );
+  }
+
+  /// ห่อปุ่มให้มี semantics label ชัดเจนสำหรับ TalkBack/VoiceOver
+  static Widget labeledButton({
+    required String label,
+    required Widget child,
+  }) {
+    return Semantics(
+      label: label,
+      button: true,
+      child: child,
+    );
   }
 }

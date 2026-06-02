@@ -6,9 +6,14 @@ import 'reminder_item.dart';
 import 'reminder_ui.dart';
 
 class ReminderDetailPage extends StatelessWidget {
-  const ReminderDetailPage({super.key, required this.item});
+  const ReminderDetailPage({
+    super.key,
+    required this.item,
+    required this.notificationService,
+  });
 
   final ReminderItem item;
+  final NotificationService notificationService;
 
   String _formatDate(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
@@ -79,7 +84,7 @@ class ReminderDetailPage extends StatelessWidget {
     if (shouldDelete != true || !context.mounted) return;
 
     // ยกเลิก notification ที่เกี่ยวข้อง — ไม่ block การลบถ้า cancel ล้มเหลว
-    await NotificationService().cancelRemindersForItem(item);
+    await notificationService.cancelRemindersForItem(item);
 
     if (!context.mounted) return;
     Navigator.of(context).pop(item.id);
@@ -94,9 +99,7 @@ class ReminderDetailPage extends StatelessWidget {
       appBar: AppBar(
         // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
         automaticallyImplyLeading: false,
-        leading: IconButton(
-          tooltip: 'กลับ',
-          icon: const Icon(Icons.arrow_back),
+        leading: ReminderUi.backButton(
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: const Text('📄 รายละเอียดรายการ'),
@@ -182,14 +185,17 @@ class ReminderDetailPage extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: errorColor,
-                    side: BorderSide(color: errorColor),
+                child: ReminderUi.labeledButton(
+                  label: 'ลบรายการ',
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: errorColor,
+                      side: BorderSide(color: errorColor),
+                    ),
+                    onPressed: () => _confirmDelete(context),
+                    icon: Icon(Icons.delete_outline, color: errorColor),
+                    label: const Text('ลบ'),
                   ),
-                  onPressed: () => _confirmDelete(context),
-                  icon: Icon(Icons.delete_outline, color: errorColor),
-                  label: const Text('ลบ'),
                 ),
               ),
             ],

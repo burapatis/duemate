@@ -9,7 +9,7 @@ void main() {
   });
 
   testWidgets('แสดงหน้าแดชบอร์ดภาษาไทย', (WidgetTester tester) async {
-    await tester.pumpWidget(const DueMateApp());
+    await tester.pumpWidget(DueMateApp());
     await tester.pumpAndSettle();
 
     expect(find.text('DueMate'), findsOneWidget);

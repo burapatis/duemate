@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../../services/due_mate_services.dart';
 import '../home/reminder_detail_page.dart';
 import '../home/reminder_item.dart';
 import '../home/reminder_ui.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key, required this.items});
+  const SearchPage({
+    super.key,
+    required this.services,
+    required this.onItemChanged,
+  });
 
-  final List<ReminderItem> items;
+  final DueMateServices services;
+
+  /// แจ้ง Home เมื่อแก้ไข/ลบจาก Detail — Home จะบันทึกและปรับการแจ้งเตือน
+  final Future<void> Function(Object? result) onItemChanged;
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -27,6 +35,14 @@ class _SearchPageState extends State<SearchPage> {
 
   final _searchController = TextEditingController();
   String _selectedCategory = _categories.first;
+  List<ReminderItem> _items = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadItems();
+  }
 
   @override
   void dispose() {
@@ -34,16 +50,34 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
-  List<ReminderItem> _filteredItems() {
-    final query = _searchController.text.trim().toLowerCase();
+  /// โหลดรายการล่าสุดจากเครื่อง — ไม่ใช้ snapshot ตอนเปิดหน้า
+  Future<void> _reloadItems() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-    // กรองจากชื่อรายการเป็นหลัก และใช้หมวดเป็นเงื่อนไขร่วม
-    return widget.items.where((item) {
-      final matchesName = query.isEmpty || item.title.toLowerCase().contains(query);
-      final matchesCategory =
-          _selectedCategory == 'ทั้งหมด' || item.category == _selectedCategory;
-      return matchesName && matchesCategory;
-    }).toList();
+    try {
+      final result = await widget.services.storage.loadReminders();
+      if (!mounted) return;
+      setState(() {
+        _items = result.items;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _items = [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<ReminderItem> _filteredItems() {
+    return filterReminderItems(
+      items: _items,
+      query: _searchController.text,
+      selectedCategory: _selectedCategory,
+    );
   }
 
   String _formatDueLabel(DateTime dueDate) {
@@ -56,14 +90,19 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> _openDetail(BuildContext context, ReminderItem item) async {
     final result = await Navigator.of(context).push<Object>(
       MaterialPageRoute(
-        builder: (_) => ReminderDetailPage(item: item),
+        builder: (_) => ReminderDetailPage(
+          item: item,
+          notificationService: widget.services.notificationService,
+        ),
       ),
     );
 
-    // ส่งผลแก้ไข/ลบกลับ Home เพื่ออัปเดตรายการหลัก
-    if (result != null && context.mounted) {
-      Navigator.of(context).pop(result);
-    }
+    if (result == null || !context.mounted) return;
+
+    // อัปเดต Home แล้วโหลดรายการใหม่ — ยังอยู่หน้าค้นหา
+    await widget.onItemChanged(result);
+    if (!context.mounted) return;
+    await _reloadItems();
   }
 
   String _resultCountLabel(int count) {
@@ -73,6 +112,30 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: IconButton(
+            tooltip: 'กลับ',
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: const Text('🔎 ค้นหาเอกสาร'),
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('กำลังโหลดรายการ...'),
+            ],
+          ),
+        ),
+      );
+    }
+
     final results = _filteredItems();
     final mutedStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -188,6 +251,24 @@ class _SearchPageState extends State<SearchPage> {
       ),
     );
   }
+}
+
+/// กรองรายการตามคำค้นหาและหมวด — ใช้ในหน้าค้นหาและ unit test
+List<ReminderItem> filterReminderItems({
+  required List<ReminderItem> items,
+  required String query,
+  required String selectedCategory,
+}) {
+  final normalizedQuery = query.trim().toLowerCase();
+
+  return items.where((item) {
+    final matchesName =
+        normalizedQuery.isEmpty ||
+        item.title.toLowerCase().contains(normalizedQuery);
+    final matchesCategory =
+        selectedCategory == 'ทั้งหมด' || item.category == selectedCategory;
+    return matchesName && matchesCategory;
+  }).toList();
 }
 
 class _SearchEmptyState extends StatelessWidget {

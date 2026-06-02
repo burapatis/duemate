@@ -6,9 +6,14 @@ import '../home/reminder_item.dart';
 import '../home/reminder_ui.dart';
 
 class ExportPage extends StatefulWidget {
-  const ExportPage({super.key, required this.items});
+  const ExportPage({
+    super.key,
+    required this.items,
+    required this.exportService,
+  });
 
   final List<ReminderItem> items;
+  final ExportService exportService;
 
   @override
   State<ExportPage> createState() => _ExportPageState();
@@ -17,10 +22,8 @@ class ExportPage extends StatefulWidget {
 class _ExportPageState extends State<ExportPage> {
   static const _pdfFormat = 'PDF อ่านง่าย';
   static const _csvFormat = 'CSV เปิดใน Excel';
-  static const _csvFileName = 'duemate_reminders.csv';
-  static const _pdfFileName = 'duemate_reminders.pdf';
 
-  final _exportService = ExportService();
+  ExportService get _exportService => widget.exportService;
 
   String _selectedFileFormat = 'PDF อ่านง่าย';
   String _selectedScope = 'ทั้งหมด';
@@ -81,10 +84,11 @@ class _ExportPageState extends State<ExportPage> {
       final file = await _exportService.exportRemindersToCsv(_filteredItems());
 
       // แชร์ไฟล์ CSV — รายการว่างได้ (มีแค่ header)
+      final fileName = file.uri.pathSegments.last;
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path)],
-          fileNameOverrides: [_csvFileName],
+          fileNameOverrides: [fileName],
           subject: 'DueMate — รายการเอกสาร',
         ),
       );
@@ -107,10 +111,11 @@ class _ExportPageState extends State<ExportPage> {
       final file = await _exportService.exportRemindersToPdf(_filteredItems());
 
       // แชร์ไฟล์ PDF — รายการว่างได้
+      final fileName = file.uri.pathSegments.last;
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path)],
-          fileNameOverrides: [_pdfFileName],
+          fileNameOverrides: [fileName],
           subject: 'DueMate — รายงานเอกสาร',
         ),
       );
@@ -137,9 +142,7 @@ class _ExportPageState extends State<ExportPage> {
       appBar: AppBar(
         // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
         automaticallyImplyLeading: false,
-        leading: IconButton(
-          tooltip: 'กลับ',
-          icon: const Icon(Icons.arrow_back),
+        leading: ReminderUi.backButton(
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: const Text('ส่งออก'),
@@ -202,8 +205,8 @@ class _ExportPageState extends State<ExportPage> {
                   if (_selectedFileFormat == _pdfFormat) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'หมายเหตุ: PDF ภาษาไทยอาจแสดงผลแตกต่างกันในบางเครื่อง '
-                      'หากพบปัญหาแนะนำใช้ไฟล์ตาราง (CSV)',
+                      'PDF ใช้ฟอnt ที่รองรับภาษาไทยสำหรับชื่อรายการและข้อความในรายงาน '
+                      'หากต้องการแก้ไขข้อมูลใน Excel แนะนำใช้ไฟล์ตาราง (CSV)',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -257,15 +260,43 @@ class _ExportPageState extends State<ExportPage> {
               ),
             ),
           ),
+          const SizedBox(height: ReminderUi.sectionGap),
+          Card(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: Padding(
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'เมื่อแชร์ไฟล์ออกจากเครื่องนี้ ผู้รับไฟล์อาจเห็นข้อมูลที่อยู่ในไฟล์ '
+                      'เช่น ชื่อรายการ วันครบกำหนด และหมายเหตุ '
+                      'โปรดตรวจสอบผู้รับก่อนส่ง',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: ReminderUi.blockGap),
           SizedBox(
             width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _createExportFile,
-              icon: const Icon(Icons.ios_share),
-              label: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Text(_shareButtonLabel),
+            child: ReminderUi.labeledButton(
+              label: _shareButtonLabel,
+              child: FilledButton.icon(
+                onPressed: _createExportFile,
+                icon: const Icon(Icons.ios_share),
+                label: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Text(_shareButtonLabel),
+                ),
               ),
             ),
           ),
