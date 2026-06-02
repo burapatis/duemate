@@ -2,21 +2,26 @@ import 'reminder_item.dart';
 
 class DashboardSummary {
   const DashboardSummary({
-    required this.dueToday,
-    required this.overdue,
-    required this.total,
+    required this.expiringSoon,
+    required this.nearing,
+    required this.normal,
   });
 
-  final int dueToday;
-  final int overdue;
-  final int total;
+  /// หมดอายุเร็วๆ นี้ — เกินกำหนด + ครบวันนี้
+  final int expiringSoon;
+
+  /// ใกล้หมดอายุ — เหลือ 1–7 วัน
+  final int nearing;
+
+  /// ปกติ — เหลือมากกว่า 7 วัน
+  final int normal;
 }
 
 class MockDashboardData {
   static const initialSummary = DashboardSummary(
-    dueToday: 1,
-    overdue: 1,
-    total: 4,
+    expiringSoon: 2,
+    nearing: 0,
+    normal: 2,
   );
 
   static final initialUpcomingDocuments = <ReminderItem>[

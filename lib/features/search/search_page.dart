@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/due_mate_services.dart';
+import '../../theme/duemate_widgets.dart';
 import '../home/reminder_detail_page.dart';
 import '../home/reminder_item.dart';
 import '../home/reminder_ui.dart';
@@ -10,31 +11,22 @@ class SearchPage extends StatefulWidget {
     super.key,
     required this.services,
     required this.onItemChanged,
+    this.embedded = false,
   });
 
   final DueMateServices services;
-
-  /// แจ้ง Home เมื่อแก้ไข/ลบจาก Detail — Home จะบันทึกและปรับการแจ้งเตือน
   final Future<void> Function(Object? result) onItemChanged;
+  final bool embedded;
 
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
-  static const _categories = <String>[
-    'ทั้งหมด',
-    'รถ',
-    'ส่วนตัว',
-    'บ้าน',
-    'ครอบครัว',
-    'สินค้า/รับประกัน',
-    'งาน/ราชการ',
-    'อื่น ๆ',
-  ];
+  static List<String> get _categories => ReminderUi.filterCategories;
 
   final _searchController = TextEditingController();
-  String _selectedCategory = _categories.first;
+  String _selectedCategory = 'ทั้งหมด';
   List<ReminderItem> _items = [];
   bool _isLoading = true;
 
@@ -80,13 +72,6 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  String _formatDueLabel(DateTime dueDate) {
-    final day = dueDate.day.toString().padLeft(2, '0');
-    final month = dueDate.month.toString().padLeft(2, '0');
-    final year = dueDate.year + 543;
-    return 'ครบกำหนด $day/$month/$year';
-  }
-
   Future<void> _openDetail(BuildContext context, ReminderItem item) async {
     final result = await Navigator.of(context).push<Object>(
       MaterialPageRoute(
@@ -113,26 +98,26 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
+      final loading = const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('กำลังโหลดรายการ...'),
+          ],
+        ),
+      );
+      if (widget.embedded) return loading;
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          leading: IconButton(
-            tooltip: 'กลับ',
-            icon: const Icon(Icons.arrow_back),
+          leading: ReminderUi.backButton(
             onPressed: () => Navigator.of(context).maybePop(),
           ),
-          title: const Text('🔎 ค้นหาเอกสาร'),
+          title: const Text('ค้นหา'),
         ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('กำลังโหลดรายการ...'),
-            ],
-          ),
-        ),
+        body: loading,
       );
     }
 
@@ -141,18 +126,7 @@ class _SearchPageState extends State<SearchPage> {
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          tooltip: 'กลับ',
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        title: const Text('🔎 ค้นหาเอกสาร'),
-      ),
-      body: Column(
+    final body = Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -228,19 +202,11 @@ class _SearchPageState extends State<SearchPage> {
                     itemCount: results.length,
                     itemBuilder: (context, index) {
                       final item = results[index];
-                      return Card(
+                      return KeyedSubtree(
                         key: ValueKey(item.id),
-                        margin: const EdgeInsets.only(bottom: ReminderUi.sectionGap),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 4,
-                          ),
-                          title: Text(item.title),
-                          subtitle: Text(
-                            '${ReminderUi.categoryLabel(item.category)} • ${_formatDueLabel(item.dueDate)}',
-                          ),
-                          trailing: const Icon(Icons.chevron_right),
+                        child: DueMateWidgets.reminderListTile(
+                          context: context,
+                          item: item,
                           onTap: () => _openDetail(context, item),
                         ),
                       );
@@ -248,7 +214,19 @@ class _SearchPageState extends State<SearchPage> {
                   ),
           ),
         ],
+    );
+
+    if (widget.embedded) return body;
+
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: ReminderUi.backButton(
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: const Text('ค้นหา'),
       ),
+      body: body,
     );
   }
 }

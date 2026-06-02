@@ -2,27 +2,23 @@ import 'package:flutter/material.dart';
 
 import '../home/reminder_item.dart';
 import '../home/reminder_ui.dart';
+import 'reminder_templates.dart';
 
 class AddReminderPage extends StatefulWidget {
-  const AddReminderPage({super.key, this.editItem});
+  const AddReminderPage({super.key, this.editItem, this.copyFrom});
 
   /// ถ้ามีค่า = โหมดแก้ไขรายการเดิม (ใช้ id เดิมตอนบันทึก)
   final ReminderItem? editItem;
+
+  /// คัดลอกจากรายการเดิม — สร้างรายการใหม่ (id ใหม่ตอนบันทึก)
+  final ReminderItem? copyFrom;
 
   @override
   State<AddReminderPage> createState() => _AddReminderPageState();
 }
 
 class _AddReminderPageState extends State<AddReminderPage> {
-  static const _categories = <String>[
-    'รถ',
-    'ส่วนตัว',
-    'บ้าน',
-    'ครอบครัว',
-    'สินค้า/รับประกัน',
-    'งาน/ราชการ',
-    'อื่น ๆ',
-  ];
+  static List<String> get _categories => ReminderUi.documentCategories;
 
   static const _reminderOptions = <int>[30, 15, 7, 1];
   static const _defaultAddReminderDays = <int>[7];
@@ -34,8 +30,11 @@ class _AddReminderPageState extends State<AddReminderPage> {
 
   String _selectedCategory = _categories.first;
   DateTime? _dueDate;
+  bool _isHandlingBack = false;
+  String _selectedTemplateId = ReminderTemplate.custom.id;
 
   bool get _isEditing => widget.editItem != null;
+  bool get _isCopying => widget.copyFrom != null && !_isEditing;
 
   /// โหมด Edit เท่านั้น — เปรียบเทียบฟอร์มกับค่าเดิม
   bool get _hasUnsavedChanges {
@@ -58,7 +57,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
 
     if (_titleController.text.trim().isNotEmpty) return true;
     if (_noteController.text.trim().isNotEmpty) return true;
-    if (_selectedCategory != _categories.first) return true;
+    if (_selectedCategory != ReminderUi.documentCategories.first) return true;
     if (_dueDate != null) return true;
     if (!_isSameReminderDays(_selectedReminderDays, _defaultAddReminderDays)) {
       return true;
@@ -131,36 +130,75 @@ class _AddReminderPageState extends State<AddReminderPage> {
 
   /// ปุ่มกลับ AppBar และ system back — เตือนเมื่อ Add/Edit มีข้อมูลที่ยังไม่บันทึก
   Future<void> _handleBack() async {
-    if (!_shouldConfirmBeforePop) {
-      if (!mounted) return;
-      Navigator.of(context).pop();
-      return;
-    }
+    if (_isHandlingBack) return;
+    _isHandlingBack = true;
 
-    final shouldDiscard = _isEditing
-        ? await _confirmDiscardChanges()
-        : await _confirmDiscardAddDraft();
-    if (shouldDiscard == true && mounted) {
-      Navigator.of(context).pop();
+    try {
+      if (!_shouldConfirmBeforePop) {
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        return;
+      }
+
+      final shouldDiscard = _isEditing
+          ? await _confirmDiscardChanges()
+          : await _confirmDiscardAddDraft();
+      if (shouldDiscard == true && mounted) {
+        Navigator.of(context).pop();
+      }
+    } finally {
+      if (mounted) {
+        _isHandlingBack = false;
+      }
     }
+  }
+
+  void _applyTemplate(ReminderTemplate template) {
+    setState(() {
+      _selectedTemplateId = template.id;
+      if (template.id == ReminderTemplate.custom.id) return;
+
+      if (template.titleSuggestion.isNotEmpty) {
+        _titleController.text = template.titleSuggestion;
+      }
+      _selectedCategory = template.category;
+      _selectedReminderDays
+        ..clear()
+        ..addAll(template.reminderDays);
+    });
+  }
+
+  void _prefillFromItem(ReminderItem source, {bool forCopy = false}) {
+    _titleController.text = forCopy
+        ? '${source.title} (สำเนา)'
+        : source.title;
+    _noteController.text = source.note;
+    _selectedCategory = source.category;
+    if (!forCopy) {
+      _dueDate = source.dueDate;
+    }
+    _selectedReminderDays
+      ..clear()
+      ..addAll(source.reminderDays);
   }
 
   @override
   void initState() {
     super.initState();
     final editItem = widget.editItem;
-    if (editItem == null) {
-      // Add ใหม่ — เลือกเตือน 7 วันเป็นค่าเริ่มต้น
-      _selectedReminderDays.add(7);
+    final copyFrom = widget.copyFrom;
+
+    if (editItem != null) {
+      _prefillFromItem(editItem);
       return;
     }
 
-    // โหมดแก้ไข — แสดงข้อมูลเดิมในฟอร์ม
-    _titleController.text = editItem.title;
-    _noteController.text = editItem.note;
-    _selectedCategory = editItem.category;
-    _dueDate = editItem.dueDate;
-    _selectedReminderDays.addAll(editItem.reminderDays);
+    if (copyFrom != null) {
+      _prefillFromItem(copyFrom, forCopy: true);
+      return;
+    }
+
+    _selectedReminderDays.add(7);
   }
 
   @override
@@ -224,9 +262,10 @@ class _AddReminderPageState extends State<AddReminderPage> {
       dueDate: _dueDate!,
       reminderDays: _selectedReminderDays.toList()..sort(),
       note: _noteController.text.trim(),
-      priority: _selectedCategory == 'งาน/ราชการ' || _selectedCategory == 'รถ'
+      priority: ReminderUi.isHighPriorityCategory(_selectedCategory)
           ? 'สูง'
           : 'กลาง',
+      isCompleted: _isEditing ? widget.editItem!.isCompleted : false,
     );
 
     Navigator.of(context).pop(item);
@@ -272,7 +311,13 @@ class _AddReminderPageState extends State<AddReminderPage> {
         // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
         automaticallyImplyLeading: false,
         leading: ReminderUi.backButton(onPressed: _handleBack),
-        title: Text(_isEditing ? '✏️ แก้ไขรายการ' : '➕ เพิ่มรายการ'),
+        title: Text(
+          _isEditing
+              ? 'แก้ไขรายการ'
+              : _isCopying
+                  ? 'คัดลอกรายการ'
+                  : 'เพิ่มรายการ',
+        ),
       ),
       body: TapRegion(
         // ปิด keyboard เมื่อแตะนอกช่องกรอก — ไม่แย่ง tap จาก TextField (Android)
@@ -283,6 +328,35 @@ class _AddReminderPageState extends State<AddReminderPage> {
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.all(ReminderUi.pagePadding),
             children: [
+            if (!_isEditing) ...[
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(ReminderUi.cardPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'เลือกแม่แบบ (ถ้ามี)',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: ReminderTemplate.presets.map((template) {
+                          return ChoiceChip(
+                            label: Text('${template.emoji} ${template.label}'),
+                            selected: _selectedTemplateId == template.id,
+                            onSelected: (_) => _applyTemplate(template),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: ReminderUi.sectionGap),
+            ],
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(ReminderUi.cardPadding),
@@ -311,9 +385,12 @@ class _AddReminderPageState extends State<AddReminderPage> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       key: const ValueKey('reminder_category_field'),
-                      initialValue: _selectedCategory,
+                      initialValue: _categories.contains(_selectedCategory)
+                          ? _selectedCategory
+                          : ReminderUi.documentCategories.last,
                       decoration: const InputDecoration(
-                        labelText: 'หมวด',
+                        labelText: 'หมวดเอกสาร',
+                        helperText: 'เลือกหมวดที่ใกล้เคียงที่สุด — ไม่ต้องพิมพ์เอง',
                         border: OutlineInputBorder(),
                       ),
                       items: _categories

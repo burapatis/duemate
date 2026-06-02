@@ -4,22 +4,51 @@ import 'features/home/home_dashboard_page.dart';
 import 'services/due_mate_services.dart';
 import 'theme/app_theme.dart';
 
-class DueMateApp extends StatelessWidget {
+class DueMateApp extends StatefulWidget {
   DueMateApp({super.key, DueMateServices? services})
       : services = services ?? DueMateServices();
 
-  /// บริการกลาง — สร้างครั้งเดียวต่อการรันแอป
   final DueMateServices services;
+
+  @override
+  State<DueMateApp> createState() => _DueMateAppState();
+}
+
+class _DueMateAppState extends State<DueMateApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+  }
+
+  Future<void> _loadThemeMode() async {
+    final mode = await widget.services.preferences.loadThemeMode();
+    if (!mounted) return;
+    setState(() {
+      _themeMode = mode;
+    });
+  }
+
+  void _onThemeModeChanged(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DueMate',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
+      themeMode: _themeMode,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      home: HomeDashboardPage(services: services),
+      home: HomeDashboardPage(
+        services: widget.services,
+        onThemeModeChanged: _onThemeModeChanged,
+      ),
     );
   }
 }

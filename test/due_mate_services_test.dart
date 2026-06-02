@@ -1,3 +1,4 @@
+import 'package:duemate/services/app_preferences.dart';
 import 'package:duemate/services/due_mate_services.dart';
 import 'package:duemate/services/export_service.dart';
 import 'package:duemate/services/local_reminder_storage.dart';
@@ -11,6 +12,7 @@ void main() {
     expect(services.storage, isA<LocalReminderStorage>());
     expect(services.notificationService, isA<NotificationService>());
     expect(services.exportService, isA<ExportService>());
+    expect(services.preferences, isA<AppPreferences>());
   });
 
   test('DueMateServices รับ service ที่ inject ได้', () {

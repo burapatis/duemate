@@ -5,15 +5,49 @@ import '../../services/due_mate_services.dart';
 import '../home/reminder_ui.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key, required this.services});
+  const SettingsPage({
+    super.key,
+    required this.services,
+    required this.onThemeModeChanged,
+    this.embedded = false,
+    this.onDataCleared,
+  });
 
   final DueMateServices services;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
+  final bool embedded;
+  final VoidCallback? onDataCleared;
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+  }
+
+  Future<void> _loadThemeMode() async {
+    final mode = await widget.services.preferences.loadThemeMode();
+    if (!mounted) return;
+    setState(() {
+      _themeMode = mode;
+    });
+  }
+
+  Future<void> _setThemeMode(ThemeMode mode) async {
+    await widget.services.preferences.saveThemeMode(mode);
+    widget.onThemeModeChanged(mode);
+    if (!mounted) return;
+    setState(() {
+      _themeMode = mode;
+    });
+  }
+
   static const _betaChecklistItems = <String>[
     'เพิ่มรายการเอกสาร',
     'แก้ไขรายการ',
@@ -111,7 +145,11 @@ class _SettingsPageState extends State<SettingsPage> {
       );
 
       // แจ้ง Home ให้เคลิร์ state เป็นรายการว่าง
-      Navigator.of(context).pop(true);
+      if (widget.embedded) {
+        widget.onDataCleared?.call();
+      } else {
+        Navigator.of(context).pop(true);
+      }
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -127,18 +165,9 @@ class _SettingsPageState extends State<SettingsPage> {
     );
     final errorColor = Theme.of(context).colorScheme.error;
 
-    return Scaffold(
-      appBar: AppBar(
-        // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
-        automaticallyImplyLeading: false,
-        leading: ReminderUi.backButton(
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        title: const Text('ตั้งค่าและความเป็นส่วนตัว'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(ReminderUi.pagePadding),
-        children: [
+    final body = ListView(
+      padding: const EdgeInsets.all(ReminderUi.pagePadding),
+      children: [
           Card(
             child: Padding(
               padding: const EdgeInsets.all(ReminderUi.cardPadding),
@@ -169,6 +198,45 @@ class _SettingsPageState extends State<SettingsPage> {
                   Text(
                     'บันทึกรายการ · แจ้งเตือนตามวันที่ · ส่งออกเป็นไฟล์ได้',
                     style: mutedStyle,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: ReminderUi.sectionGap),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(ReminderUi.cardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'รูปแบบหน้าจอ',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 10),
+                  SegmentedButton<ThemeMode>(
+                    segments: const [
+                      ButtonSegment(
+                        value: ThemeMode.system,
+                        label: Text('ตามระบบ'),
+                        icon: Icon(Icons.brightness_auto),
+                      ),
+                      ButtonSegment(
+                        value: ThemeMode.light,
+                        label: Text('สว่าง'),
+                        icon: Icon(Icons.light_mode),
+                      ),
+                      ButtonSegment(
+                        value: ThemeMode.dark,
+                        label: Text('มืด'),
+                        icon: Icon(Icons.dark_mode),
+                      ),
+                    ],
+                    selected: {_themeMode},
+                    onSelectionChanged: (selection) {
+                      _setThemeMode(selection.first);
+                    },
                   ),
                 ],
               ),
@@ -350,13 +418,25 @@ class _SettingsPageState extends State<SettingsPage> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 8),
-                  Text('DueMate v0.8.0', style: mutedStyle),
+                  Text('DueMate v0.9.0', style: mutedStyle),
                 ],
               ),
             ),
           ),
         ],
+    );
+
+    if (widget.embedded) return body;
+
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: ReminderUi.backButton(
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: const Text('ตั้งค่าและความเป็นส่วนตัว'),
       ),
+      body: body,
     );
   }
 }

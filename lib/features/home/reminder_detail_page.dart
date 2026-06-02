@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../add/add_reminder_page.dart';
 import '../../services/notification_service.dart';
+import '../../theme/duemate_widgets.dart';
+import 'due_date_helper.dart';
 import 'reminder_item.dart';
 import 'reminder_ui.dart';
 
@@ -15,31 +17,12 @@ class ReminderDetailPage extends StatelessWidget {
   final ReminderItem item;
   final NotificationService notificationService;
 
-  String _formatDate(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final year = date.year + 543;
-    return '$day/$month/$year';
-  }
-
-  String _buildStatus(DateTime dueDate) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final due = DateTime(dueDate.year, dueDate.month, dueDate.day);
-
-    // สถานะนี้เป็นกติกาแบบง่ายสำหรับ v0.1.0 เพื่อให้ผู้ใช้เห็นความเร่งด่วน
-    if (due.isBefore(today)) return 'เกินกำหนด';
-    if (due.difference(today).inDays <= 7) return 'ใกล้ครบกำหนด';
-    return 'ปกติ';
-  }
-
   String _buildReminderLabel(List<int> reminderDays) {
     if (reminderDays.isEmpty) return 'ไม่ได้ตั้งค่า';
     final sorted = [...reminderDays]..sort((a, b) => b.compareTo(a));
     return sorted.map((day) => '$day วัน').join(', ');
   }
 
-  /// เปิดฟอร์มแก้ไข — ส่ง ReminderItem ที่อัปเดตกลับ Home
   Future<void> _openEdit(BuildContext context) async {
     final updatedItem = await Navigator.of(context).push<ReminderItem>(
       MaterialPageRoute(
@@ -51,7 +34,50 @@ class ReminderDetailPage extends StatelessWidget {
     Navigator.of(context).pop(updatedItem);
   }
 
-  /// ยืนยันแล้วลบรายการ — ส่ง reminder id กลับ parent เพื่ออัปเดต Home
+  Future<void> _openDuplicate(BuildContext context) async {
+    final newItem = await Navigator.of(context).push<ReminderItem>(
+      MaterialPageRoute(
+        builder: (_) => AddReminderPage(copyFrom: item),
+      ),
+    );
+
+    if (newItem == null || !context.mounted) return;
+    Navigator.of(context).pop(newItem);
+  }
+
+  Future<void> _toggleCompleted(BuildContext context) async {
+    if (!item.isCompleted) {
+      final shouldComplete = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('ทำเครื่องหมายเสร็จแล้ว?'),
+            content: const Text(
+              'รายการนี้จะยังอยู่ในเครื่อง ไม่ถูกลบ '
+              'แต่จะไม่แจ้งเตือนอีก และแสดงเป็นรายการที่เสร็จแล้ว',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('ยกเลิก'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('เสร็จแล้ว'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (shouldComplete != true || !context.mounted) return;
+    }
+
+    final updated = item.copyWith(isCompleted: !item.isCompleted);
+    if (!context.mounted) return;
+    Navigator.of(context).pop(updated);
+  }
+
   Future<void> _confirmDelete(BuildContext context) async {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -83,7 +109,6 @@ class ReminderDetailPage extends StatelessWidget {
 
     if (shouldDelete != true || !context.mounted) return;
 
-    // ยกเลิก notification ที่เกี่ยวข้อง — ไม่ block การลบถ้า cancel ล้มเหลว
     await notificationService.cancelRemindersForItem(item);
 
     if (!context.mounted) return;
@@ -92,43 +117,54 @@ class ReminderDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = _buildStatus(item.dueDate);
-    final errorColor = Theme.of(context).colorScheme.error;
+    final scheme = Theme.of(context).colorScheme;
+    final urgency = DueDateHelper.urgencyLevel(
+      dueDate: item.dueDate,
+      isCompleted: item.isCompleted,
+    );
+    final headerColor = DueDateHelper.urgencyContainerColor(urgency, scheme);
 
     return Scaffold(
       appBar: AppBar(
-        // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
         automaticallyImplyLeading: false,
         leading: ReminderUi.backButton(
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        title: const Text('📄 รายละเอียดรายการ'),
+        title: const Text('รายละเอียด'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(ReminderUi.pagePadding),
         children: [
           Card(
+            color: headerColor,
             child: Padding(
               padding: const EdgeInsets.all(ReminderUi.cardPadding),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          style: Theme.of(context).textTheme.titleLarge,
+                  Text(
+                    item.title,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          ReminderUi.categoryLabel(item.category),
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        _StatusChip(label: status),
-                      ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(ReminderUi.categoryLabel(item.category)),
+                  const SizedBox(height: 12),
+                  Text(
+                    DueDateHelper.formatDaysRemaining(
+                      item.dueDate,
+                      isCompleted: item.isCompleted,
                     ),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  DueMateWidgets.statusPill(
+                    context: context,
+                    dueDate: item.dueDate,
+                    isCompleted: item.isCompleted,
                   ),
                 ],
               ),
@@ -142,16 +178,21 @@ class ReminderDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '📅 ข้อมูลกำหนดเวลา',
+                    'ข้อมูลกำหนดเวลา',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 10),
-                  _DetailRow(label: 'วันครบกำหนด', value: _formatDate(item.dueDate)),
+                  _DetailRow(
+                    label: 'วันครบกำหนด',
+                    value: DueDateHelper.formatThaiDate(item.dueDate),
+                  ),
                   const SizedBox(height: 8),
                   _DetailRow(
                     label: 'เตือนล่วงหน้า',
                     value: _buildReminderLabel(item.reminderDays),
                   ),
+                  const SizedBox(height: 8),
+                  _DetailRow(label: 'ความสำคัญ', value: item.priority),
                 ],
               ),
             ),
@@ -164,7 +205,7 @@ class ReminderDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '📌 หมายเหตุ',
+                    'หมายเหตุ',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
@@ -173,62 +214,54 @@ class ReminderDetailPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: () => _openEdit(context),
-                  icon: const Icon(Icons.edit),
-                  label: const Text('แก้ไข'),
-                ),
+          const SizedBox(height: ReminderUi.blockGap),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => _openEdit(context),
+              icon: const Icon(Icons.edit),
+              label: const Text('แก้ไข'),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _openDuplicate(context),
+              icon: const Icon(Icons.copy),
+              label: const Text('คัดลอกเป็นรายการใหม่'),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _toggleCompleted(context),
+              icon: Icon(
+                item.isCompleted ? Icons.undo : Icons.check_circle_outline,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ReminderUi.labeledButton(
-                  label: 'ลบรายการ',
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: errorColor,
-                      side: BorderSide(color: errorColor),
-                    ),
-                    onPressed: () => _confirmDelete(context),
-                    icon: Icon(Icons.delete_outline, color: errorColor),
-                    label: const Text('ลบ'),
-                  ),
-                ),
+              label: Text(
+                item.isCompleted
+                    ? 'ทำเครื่องหมายว่ายังไม่เสร็จ'
+                    : 'ทำเครื่องหมายเสร็จแล้ว',
               ),
-            ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          ReminderUi.labeledButton(
+            label: 'ลบรายการ',
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: scheme.error,
+                side: BorderSide(color: scheme.error),
+              ),
+              onPressed: () => _confirmDelete(context),
+              icon: Icon(Icons.delete_outline, color: scheme.error),
+              label: const Text('ลบรายการ'),
+            ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final (backgroundColor, foregroundColor) = switch (label) {
-      'เกินกำหนด' => (colorScheme.errorContainer, colorScheme.onErrorContainer),
-      'ใกล้ครบกำหนด' => (
-          colorScheme.tertiaryContainer,
-          colorScheme.onTertiaryContainer,
-        ),
-      _ => (colorScheme.secondaryContainer, colorScheme.onSecondaryContainer),
-    };
-
-    return Chip(
-      label: Text(label),
-      backgroundColor: backgroundColor,
-      labelStyle: TextStyle(color: foregroundColor, fontWeight: FontWeight.w600),
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
     );
   }
 }

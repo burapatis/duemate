@@ -99,6 +99,7 @@ class ExportService {
         'reminderDays',
         'note',
         'priority',
+        'isCompleted',
       ],
       ...reminders.map((item) {
         return [
@@ -109,6 +110,7 @@ class ExportService {
           item.reminderDays.join('|'),
           item.note,
           item.priority,
+          item.isCompleted ? 'ใช่' : 'ไม่',
         ];
       }),
     ];
@@ -162,6 +164,10 @@ class ExportService {
           _pdfField('หมวด', item.category),
           _pdfField('วันครบกำหนด', _formatDate(item.dueDate)),
           _pdfField('เตือนล่วงหน้า', _formatReminderDays(item.reminderDays)),
+          _pdfField(
+            'สถานะ',
+            item.isCompleted ? 'เสร็จแล้ว' : 'ยังไม่เสร็จ',
+          ),
           if (item.note.isNotEmpty) _pdfField('หมายเหตุ', item.note),
         ],
       ),

@@ -7,6 +7,7 @@ class ReminderItem {
     required this.reminderDays,
     required this.note,
     required this.priority,
+    this.isCompleted = false,
   });
 
   final String id;
@@ -16,8 +17,30 @@ class ReminderItem {
   final List<int> reminderDays;
   final String note;
   final String priority;
+  final bool isCompleted;
 
-  /// แปลงเป็น JSON สำหรับบันทึกลง shared_preferences ในขั้นถัดไป
+  ReminderItem copyWith({
+    String? id,
+    String? title,
+    String? category,
+    DateTime? dueDate,
+    List<int>? reminderDays,
+    String? note,
+    String? priority,
+    bool? isCompleted,
+  }) {
+    return ReminderItem(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      category: category ?? this.category,
+      dueDate: dueDate ?? this.dueDate,
+      reminderDays: reminderDays ?? this.reminderDays,
+      note: note ?? this.note,
+      priority: priority ?? this.priority,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -27,10 +50,10 @@ class ReminderItem {
       'reminderDays': reminderDays,
       'note': note,
       'priority': priority,
+      'isCompleted': isCompleted,
     };
   }
 
-  /// สร้างจาก JSON ที่อ่านจาก shared_preferences
   factory ReminderItem.fromJson(Map<String, dynamic> json) {
     final rawId = json['id'];
     final id = (rawId is String && rawId.isNotEmpty)
@@ -47,6 +70,7 @@ class ReminderItem {
           .toList(),
       note: json['note'] as String? ?? '',
       priority: json['priority'] as String? ?? 'กลาง',
+      isCompleted: json['isCompleted'] as bool? ?? false,
     );
   }
 }

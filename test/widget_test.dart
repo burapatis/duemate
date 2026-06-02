@@ -13,7 +13,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('DueMate'), findsOneWidget);
-    expect(find.text('รายการเอกสารของคุณ'), findsOneWidget);
-    expect(find.text('วันนี้'), findsOneWidget);
+    expect(find.text('สรุปเอกสาร'), findsOneWidget);
+    expect(find.text('รายการเอกสารสำคัญ'), findsOneWidget);
+    expect(find.text('หน้าหลัก'), findsOneWidget);
   });
 }

@@ -22,6 +22,21 @@ void main() {
     expect(restored.reminderDays, original.reminderDays);
     expect(restored.note, original.note);
     expect(restored.priority, original.priority);
+    expect(restored.isCompleted, original.isCompleted);
+  });
+
+  test('fromJson รองรับข้อมูลเก่าที่ไม่มี isCompleted', () {
+    final restored = ReminderItem.fromJson({
+      'id': 'legacy',
+      'title': 'ทดสอบ',
+      'category': 'อื่น ๆ',
+      'dueDate': '2026-01-01T00:00:00.000',
+      'reminderDays': [7],
+      'note': '',
+      'priority': 'กลาง',
+    });
+
+    expect(restored.isCompleted, false);
   });
 
   test('dueDate บันทึกเป็น ISO 8601 string', () {
