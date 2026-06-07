@@ -5,7 +5,7 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = DueMate
+PRODUCT_NAME = เพื่อนเตือนเอกสาร
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = com.burapatis.duemate

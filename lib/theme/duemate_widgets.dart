@@ -4,6 +4,7 @@ import '../features/home/due_date_helper.dart';
 import '../features/home/reminder_item.dart';
 import '../features/home/reminder_ui.dart';
 import 'app_brand_colors.dart';
+import 'app_branding.dart';
 
 /// Widget กลางของ DueMate — สไตล์ DOCSAFE
 class DueMateWidgets {
@@ -52,7 +53,7 @@ class DueMateWidgets {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'DueMate',
+                        AppBranding.displayNameTh,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -60,7 +61,7 @@ class DueMateWidgets {
                             ),
                       ),
                       Text(
-                        'เตือนเอกสารและวันครบกำหนด',
+                        AppBranding.displayNameEn,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Colors.white.withValues(alpha: 0.9),
                             ),

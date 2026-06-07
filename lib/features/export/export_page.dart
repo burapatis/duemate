@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../services/due_mate_services.dart';
+import '../../theme/app_branding.dart';
 import '../../services/export_service.dart';
 import '../home/due_date_helper.dart';
 import '../home/reminder_item.dart';
@@ -123,7 +124,7 @@ class _ExportPageState extends State<ExportPage> {
         ShareParams(
           files: [XFile(file.path)],
           fileNameOverrides: [fileName],
-          subject: 'DueMate — รายการเอกสาร',
+          subject: '${AppBranding.displayNameEn} — รายการเอกสาร',
         ),
       );
 
@@ -149,7 +150,7 @@ class _ExportPageState extends State<ExportPage> {
         ShareParams(
           files: [XFile(file.path)],
           fileNameOverrides: [fileName],
-          subject: 'DueMate — รายงานเอกสาร',
+          subject: '${AppBranding.displayNameEn} — รายงานเอกสาร',
         ),
       );
 

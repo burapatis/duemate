@@ -1,12 +1,14 @@
+import '../../theme/app_branding.dart';
+
 /// ข้อความข้อตกลงและวิธีใช้งาน — ภาษาไทย อ่านง่าย
 class OnboardingContent {
   static const termsTitle = 'ข้อตกลงและเงื่อนไขการใช้งาน';
 
   static const termsSections = <({String title, List<String> bullets})>[
     (
-      title: 'DueMate คืออะไร',
+      title: '${AppBranding.displayNameTh} คืออะไร',
       bullets: [
-        'DueMate เป็นแอปช่วยบันทึกและเตือนวันครบกำหนดของเอกสารหรือรายการสำคัญ',
+        '${AppBranding.displayNameTh} เป็นแอปช่วยบันทึกและเตือนวันครบกำหนดของเอกสารหรือรายการสำคัญ',
         'แอปนี้เป็นเครื่องมือช่วยจำวันที่เท่านั้น ไม่ใช่บริการทางกฎหมาย การเงิน ราชการ ประกันภัย หรือการแพทย์',
       ],
     ),

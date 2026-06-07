@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_branding.dart';
 import '../home/reminder_ui.dart';
 import 'onboarding_content.dart';
 
@@ -33,7 +34,7 @@ class UsageGuidePage extends StatelessWidget {
               padding: const EdgeInsets.all(ReminderUi.pagePadding),
               children: [
                 Text(
-                  'เริ่มใช้ DueMate ได้ใน 5 ขั้นตอนนี้',
+                  'เริ่มใช้ ${AppBranding.displayNameTh} ได้ใน 5 ขั้นตอนนี้',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: ReminderUi.blockGap),

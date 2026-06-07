@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:duemate/app.dart';
+import 'package:duemate/theme/app_branding.dart';
 
 void main() {
   setUp(() {
@@ -15,7 +16,8 @@ void main() {
     await tester.pumpWidget(DueMateApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('DueMate'), findsOneWidget);
+    expect(find.text(AppBranding.displayNameTh), findsOneWidget);
+    expect(find.text(AppBranding.displayNameEn), findsOneWidget);
     expect(find.text('สรุปเอกสาร'), findsOneWidget);
     expect(find.text('รายการเอกสารสำคัญ'), findsOneWidget);
     expect(find.text('หน้าหลัก'), findsOneWidget);

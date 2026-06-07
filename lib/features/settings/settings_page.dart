@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/due_mate_services.dart';
 import '../../theme/app_brand_colors.dart';
+import '../../theme/app_branding.dart';
 import '../home/reminder_ui.dart';
 import '../onboarding/terms_of_use_page.dart';
 import '../onboarding/usage_guide_page.dart';
@@ -82,12 +83,12 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!permitted) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'ยังไม่ได้อนุญาตแจ้งเตือน — ไปที่ ตั้งค่า iPhone → DueMate → '
-              'การแจ้งเตือน แล้วเปิด "อนุญาต"',
+              'ยังไม่ได้อนุญาตแจ้งเตือน — ไปที่ ตั้งค่า iPhone → '
+              '${AppBranding.displayNameTh} → การแจ้งเตือน แล้วเปิด "อนุญาต"',
             ),
-            duration: Duration(seconds: 5),
+            duration: const Duration(seconds: 5),
           ),
         );
         return;
@@ -211,7 +212,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   const SizedBox(height: ReminderUi.sectionGap),
                   Text(
-                    'DueMate เป็นเครื่องมือช่วยบันทึกและเตือน '
+                    '${AppBranding.displayNameTh} เป็นเครื่องมือช่วยบันทึกและเตือน '
                     'ไม่ใช่บริการทางกฎหมาย การเงิน ราชการ หรือประกันภัย',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
@@ -400,7 +401,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'DueMate เวอร์ชันนี้พร้อมสำหรับการทดสอบเบื้องต้นกับผู้ใช้กลุ่มเล็ก '
+                            '${AppBranding.displayNameTh} เวอร์ชันนี้พร้อมสำหรับการทดสอบเบื้องต้นกับผู้ใช้กลุ่มเล็ก '
                             'เช่น 5–10 คน',
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
@@ -501,16 +502,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'เกี่ยวกับ DueMate',
+                    'เกี่ยวกับ ${AppBranding.displayNameTh}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'แอปช่วยบันทึกและเตือนวันครบกำหนดเอกสารสำคัญ',
+                    AppBranding.taglineTh,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 8),
-                  Text('DueMate v0.9.0', style: mutedStyle),
+                  Text(
+                    '${AppBranding.displayNameEn} v0.9.0',
+                    style: mutedStyle,
+                  ),
                 ],
               ),
             ),

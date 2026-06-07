@@ -4,6 +4,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../features/home/reminder_item.dart';
+import '../theme/app_branding.dart';
 import 'reminder_notification_id.dart';
 
 /// ผลการตั้งแจ้งเตือนตาม reminderDays ของรายการ
@@ -23,8 +24,6 @@ class NotificationService {
   static const _defaultReminderHour = 9;
   static const _testNotificationId = 1;
   static const _androidChannelId = 'duemate_general';
-  static const _androidChannelName = 'DueMate';
-  static const _androidChannelDescription = 'แจ้งเตือนจาก DueMate';
 
   static const _darwinNotificationDetails = DarwinNotificationDetails(
     presentAlert: true,
@@ -34,17 +33,17 @@ class NotificationService {
     presentList: true,
   );
 
-  static const _notificationDetails = NotificationDetails(
-    android: AndroidNotificationDetails(
-      _androidChannelId,
-      _androidChannelName,
-      channelDescription: _androidChannelDescription,
-      importance: Importance.defaultImportance,
-      priority: Priority.defaultPriority,
-    ),
-    iOS: _darwinNotificationDetails,
-    macOS: _darwinNotificationDetails,
-  );
+  static NotificationDetails get _notificationDetails => NotificationDetails(
+        android: AndroidNotificationDetails(
+          _androidChannelId,
+          AppBranding.displayNameTh,
+          channelDescription: 'แจ้งเตือนจาก ${AppBranding.displayNameTh}',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+        ),
+        iOS: _darwinNotificationDetails,
+        macOS: _darwinNotificationDetails,
+      );
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
@@ -243,7 +242,7 @@ class NotificationService {
 
       await _plugin.show(
         id: _testNotificationId,
-        title: 'DueMate',
+        title: AppBranding.notificationTitle,
         body: 'นี่คือการทดสอบแจ้งเตือน',
         notificationDetails: _notificationDetails,
       );
@@ -298,7 +297,7 @@ class NotificationService {
         attempted++;
         final ok = await scheduleReminderNotification(
           id: reminderNotificationId(item.id, reminderDay),
-          title: 'DueMate',
+          title: AppBranding.notificationTitle,
           body: 'ใกล้ถึงกำหนด: ${item.title}',
           scheduledDate: scheduledDate,
         );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_branding.dart';
 import '../home/reminder_ui.dart';
 import 'onboarding_content.dart';
 
@@ -44,7 +45,7 @@ class _TermsOfUsePageState extends State<TermsOfUsePage> {
               padding: const EdgeInsets.all(ReminderUi.pagePadding),
               children: [
                 Text(
-                  'กรุณาอ่านข้อตกลงก่อนเริ่มใช้งาน DueMate',
+                  'กรุณาอ่านข้อตกลงก่อนเริ่มใช้งาน ${AppBranding.displayNameTh}',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: ReminderUi.blockGap),

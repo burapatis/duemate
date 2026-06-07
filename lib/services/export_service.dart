@@ -8,6 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../features/home/reminder_item.dart';
+import '../theme/app_branding.dart';
 
 /// สร้างไฟล์ export รายการ ReminderItem เป็น CSV/PDF
 class ExportService {
@@ -180,8 +181,13 @@ class ExportService {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(
-          'DueMate',
+          AppBranding.displayNameTh,
           style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.SizedBox(height: 4),
+        pw.Text(
+          AppBranding.displayNameEn,
+          style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
         ),
         pw.SizedBox(height: 8),
         pw.Text(
@@ -212,7 +218,7 @@ class ExportService {
         ),
         pw.SizedBox(height: 4),
         pw.Text(
-          'DueMate เป็นเครื่องมือช่วยบันทึกและเตือน '
+          '${AppBranding.displayNameTh} เป็นเครื่องมือช่วยบันทึกและเตือน '
           'ไม่ใช่บริการทางกฎหมาย การเงิน ราชการ หรือประกันภัย',
           style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
         ),

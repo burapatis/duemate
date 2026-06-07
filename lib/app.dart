@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'features/onboarding/app_launch_gate.dart';
 import 'services/due_mate_services.dart';
+import 'theme/app_branding.dart';
 import 'theme/app_theme.dart';
 
 class DueMateApp extends StatefulWidget {
@@ -40,7 +41,7 @@ class _DueMateAppState extends State<DueMateApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DueMate',
+      title: AppBranding.displayNameTh,
       debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
       theme: AppTheme.lightTheme,
