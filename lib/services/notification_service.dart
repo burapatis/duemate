@@ -399,6 +399,26 @@ class NotificationService {
     }
   }
 
+  /// ซิงก์การแจ้งเตือนทั้งหมดจากรายการในเครื่อง — ใช้ตอนเปิดแอปหลัง reboot/reinstall
+  Future<void> syncAllReminders(List<ReminderItem> items) async {
+    try {
+      final initialized = await initialize();
+      if (!initialized) return;
+
+      await _plugin.cancelAllPendingNotifications();
+
+      for (final item in items) {
+        if (item.isCompleted) {
+          await cancelRemindersForItem(item);
+          continue;
+        }
+        await scheduleRemindersForItem(item);
+      }
+    } catch (_) {
+      // ซิงก์ไม่สำเร็จ — ไม่ให้แอป crash
+    }
+  }
+
   /// ยกเลิกแจ้งเตือนที่แสดงอยู่และที่ schedule ค้างอยู่ทั้งหมด — คืน true ถ้าสำเร็จ
   Future<bool> cancelAllNotifications() async {
     try {

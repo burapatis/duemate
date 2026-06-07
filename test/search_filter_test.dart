@@ -89,4 +89,52 @@ void main() {
     expect(result.length, 1);
     expect(result.first.category, 'ส่วนตัว');
   });
+
+  test('filterReminderItems ซ่อนรายการที่เสร็จแล้ว', () {
+    final withCompleted = [
+      ...items,
+      _item(
+        id: '4',
+        title: 'เสร็จแล้ว',
+        category: 'อื่น ๆ',
+      ).copyWith(isCompleted: true),
+    ];
+
+    final result = filterReminderItems(
+      items: withCompleted,
+      query: '',
+      selectedCategory: 'ทั้งหมด',
+      hideCompleted: true,
+    );
+
+    expect(result.length, 3);
+    expect(result.any((item) => item.isCompleted), isFalse);
+  });
+
+  test('filterReminderItems เรียงตามความเร่งด่วน', () {
+    final urgentItems = [
+      _item(id: 'a', title: 'ปกติ', category: 'อื่น ๆ'),
+      _item(id: 'b', title: 'ใกล้ครบ', category: 'อื่น ๆ'),
+      _item(id: 'c', title: 'เกินกำหนด', category: 'อื่น ๆ'),
+    ];
+
+    final result = filterReminderItems(
+      items: [
+        urgentItems[0].copyWith(
+          dueDate: DateTime.now().add(const Duration(days: 30)),
+        ),
+        urgentItems[1].copyWith(
+          dueDate: DateTime.now().add(const Duration(days: 3)),
+        ),
+        urgentItems[2].copyWith(
+          dueDate: DateTime.now().subtract(const Duration(days: 2)),
+        ),
+      ],
+      query: '',
+      selectedCategory: 'ทั้งหมด',
+    );
+
+    expect(result.first.title, 'เกินกำหนด');
+    expect(result.last.title, 'ปกติ');
+  });
 }

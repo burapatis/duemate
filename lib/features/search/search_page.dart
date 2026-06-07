@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/due_mate_services.dart';
 import '../../theme/duemate_widgets.dart';
+import '../home/due_date_helper.dart';
 import '../home/reminder_detail_page.dart';
 import '../home/reminder_item.dart';
 import '../home/reminder_ui.dart';
@@ -13,6 +14,7 @@ class SearchPage extends StatefulWidget {
     required this.onItemChanged,
     this.embedded = false,
     this.isActive = true,
+    this.hideCompleted = false,
   });
 
   final DueMateServices services;
@@ -21,6 +23,9 @@ class SearchPage extends StatefulWidget {
 
   /// เมื่อเป็นแท็บฝังใน Home — โหลดข้อมูลใหม่ทุกครั้งที่สลับมาหน้านี้
   final bool isActive;
+
+  /// sync กับสวิตช์ "ซ่อนรายการที่เสร็จแล้ว" บนหน้าหลัก
+  final bool hideCompleted;
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -45,6 +50,8 @@ class _SearchPageState extends State<SearchPage> {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive && !oldWidget.isActive) {
       _reloadItems();
+    } else if (widget.hideCompleted != oldWidget.hideCompleted) {
+      setState(() {});
     }
   }
 
@@ -81,6 +88,7 @@ class _SearchPageState extends State<SearchPage> {
       items: _items,
       query: _searchController.text,
       selectedCategory: _selectedCategory,
+      hideCompleted: widget.hideCompleted,
     );
   }
 
@@ -248,10 +256,13 @@ List<ReminderItem> filterReminderItems({
   required List<ReminderItem> items,
   required String query,
   required String selectedCategory,
+  bool hideCompleted = false,
 }) {
   final normalizedQuery = query.trim().toLowerCase();
 
-  return items.where((item) {
+  final filtered = items.where((item) {
+    if (hideCompleted && item.isCompleted) return false;
+
     final matchesName =
         normalizedQuery.isEmpty ||
         item.title.toLowerCase().contains(normalizedQuery) ||
@@ -265,6 +276,9 @@ List<ReminderItem> filterReminderItems({
     );
     return matchesName && matchesCategory;
   }).toList();
+
+  filtered.sort(DueDateHelper.compareReminders);
+  return filtered;
 }
 
 class _SearchEmptyState extends StatelessWidget {

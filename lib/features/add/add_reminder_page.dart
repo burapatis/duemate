@@ -334,16 +334,20 @@ class _AddReminderPageState extends State<AddReminderPage> {
         );
   }
 
-  InputDecoration _fieldDecoration({
+  InputDecoration _fieldDecoration(
+    BuildContext context, {
     required String labelText,
     String? helperText,
   }) {
+    final theme = Theme.of(context);
     return InputDecoration(
       labelText: labelText,
       helperText: helperText,
       border: const OutlineInputBorder(),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: theme.brightness == Brightness.light
+          ? Colors.white
+          : theme.colorScheme.surfaceContainerHighest,
     );
   }
 
@@ -448,7 +452,10 @@ class _AddReminderPageState extends State<AddReminderPage> {
                         color: fieldLabelColor,
                         fontWeight: FontWeight.w500,
                       ),
-                      decoration: _fieldDecoration(labelText: 'ชื่อรายการ'),
+                      decoration: _fieldDecoration(
+                        context,
+                        labelText: 'ชื่อรายการ',
+                      ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'กรุณากรอกชื่อรายการ';
@@ -463,6 +470,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
                           ? _selectedCategory
                           : ReminderUi.documentCategories.last,
                       decoration: _fieldDecoration(
+                        context,
                         labelText: 'หมวดเอกสาร',
                         helperText:
                             'เลือกหมวดที่ใกล้เคียงที่สุด — ไม่ต้องพิมพ์เอง',
@@ -580,6 +588,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
                         fontWeight: FontWeight.w500,
                       ),
                       decoration: _fieldDecoration(
+                        context,
                         labelText: 'รายละเอียดเพิ่มเติม (ถ้ามี)',
                       ).copyWith(alignLabelWithHint: true),
                     ),

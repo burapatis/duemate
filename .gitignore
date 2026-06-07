@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android release signing — อย่า commit คีย์จริง
+/android/key.properties
+*.jks
+*.keystore

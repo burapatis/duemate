@@ -1,0 +1,7 @@
+# คัดลอกไฟล์นี้เป็น key.properties แล้วกรอกค่าจริงก่อน build release
+# อย่า commit key.properties หรือไฟล์ .jks/.keystore ขึ้น Git
+
+storePassword=your_keystore_password
+keyPassword=your_key_password
+keyAlias=upload
+storeFile=../upload-keystore.jks

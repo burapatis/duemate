@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../services/due_mate_services.dart';
@@ -73,6 +75,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           ),
         );
       }
+
+      // ซิงก์การแจ้งเตือนกับระบบ — กู้คืนหลัง reboot/reinstall
+      unawaited(_notificationService.syncAllReminders(result.items));
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -127,10 +132,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   void _openExport() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ExportPage(
-          items: _upcomingDocuments,
-          exportService: widget.services.exportService,
-        ),
+        builder: (_) => ExportPage(services: widget.services),
       ),
     );
   }
@@ -677,6 +679,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           SearchPage(
             embedded: true,
             isActive: _navIndex == 1,
+            hideCompleted: _hideCompleted,
             services: widget.services,
             onItemChanged: _handleNavigationResult,
           ),

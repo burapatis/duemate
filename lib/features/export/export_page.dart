@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../services/due_mate_services.dart';
 import '../../services/export_service.dart';
+import '../home/due_date_helper.dart';
 import '../home/reminder_item.dart';
 import '../home/reminder_ui.dart';
 
 class ExportPage extends StatefulWidget {
   const ExportPage({
     super.key,
-    required this.items,
-    required this.exportService,
+    required this.services,
   });
 
-  final List<ReminderItem> items;
-  final ExportService exportService;
+  final DueMateServices services;
 
   @override
   State<ExportPage> createState() => _ExportPageState();
@@ -23,10 +23,40 @@ class _ExportPageState extends State<ExportPage> {
   static const _pdfFormat = 'PDF อ่านง่าย';
   static const _csvFormat = 'CSV เปิดใน Excel';
 
-  ExportService get _exportService => widget.exportService;
+  ExportService get _exportService => widget.services.exportService;
 
   String _selectedFileFormat = 'PDF อ่านง่าย';
   String _selectedScope = 'ทั้งหมด';
+  List<ReminderItem> _items = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  /// โหลดรายการล่าสุดจากเครื่อง — ไม่พึ่ง snapshot ใน memory ของหน้าหลัก
+  Future<void> _loadItems() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await widget.services.storage.loadReminders();
+      if (!mounted) return;
+      setState(() {
+        _items = result.items;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _items = [];
+        _isLoading = false;
+      });
+    }
+  }
 
   /// ข้อความปุ่มตามรูปแบบไฟล์ที่เลือก
   String get _shareButtonLabel {
@@ -47,12 +77,14 @@ class _ExportPageState extends State<ExportPage> {
 
   String get _exportCountLabel => 'จะส่งออก $_exportCount รายการ';
 
-  /// กรองรายการตามขอบเขตที่ผู้ใช้เลือก
+  /// กรองรายการตามขอบเขตที่ผู้ใช้เลือก — ไม่รวมรายการที่เสร็จแล้ว
   List<ReminderItem> _filteredItems() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    return widget.items.where((item) {
+    final filtered = _items.where((item) {
+      if (item.isCompleted) return false;
+
       final due = DateTime(
         item.dueDate.year,
         item.dueDate.month,
@@ -66,6 +98,9 @@ class _ExportPageState extends State<ExportPage> {
         _ => true,
       };
     }).toList();
+
+    filtered.sort(DueDateHelper.compareReminders);
+    return filtered;
   }
 
   /// สร้างไฟล์ export ตามรูปแบบที่เลือก — CSV/PDF สร้างแล้วเปิด share sheet
@@ -83,7 +118,6 @@ class _ExportPageState extends State<ExportPage> {
     try {
       final file = await _exportService.exportRemindersToCsv(_filteredItems());
 
-      // แชร์ไฟล์ CSV — รายการว่างได้ (มีแค่ header)
       final fileName = file.uri.pathSegments.last;
       await SharePlus.instance.share(
         ShareParams(
@@ -110,7 +144,6 @@ class _ExportPageState extends State<ExportPage> {
     try {
       final file = await _exportService.exportRemindersToPdf(_filteredItems());
 
-      // แชร์ไฟล์ PDF — รายการว่างได้
       final fileName = file.uri.pathSegments.last;
       await SharePlus.instance.share(
         ShareParams(
@@ -134,13 +167,34 @@ class _ExportPageState extends State<ExportPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: ReminderUi.backButton(
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: const Text('ส่งออก'),
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('กำลังโหลดรายการ...'),
+            ],
+          ),
+        ),
+      );
+    }
+
     final mutedStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
 
     return Scaffold(
       appBar: AppBar(
-        // macOS: AppBar back แบบ default อาจไม่รับ tap — ใช้ leading ชัดเจน
         automaticallyImplyLeading: false,
         leading: ReminderUi.backButton(
           onPressed: () => Navigator.of(context).maybePop(),
@@ -205,7 +259,7 @@ class _ExportPageState extends State<ExportPage> {
                   if (_selectedFileFormat == _pdfFormat) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'PDF ใช้ฟอnt ที่รองรับภาษาไทยสำหรับชื่อรายการและข้อความในรายงาน '
+                      'PDF ใช้ฟอนต์ที่รองรับภาษาไทยสำหรับชื่อรายการและข้อความในรายงาน '
                       'หากต้องการแก้ไขข้อมูลใน Excel แนะนำใช้ไฟล์ตาราง (CSV)',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -236,7 +290,7 @@ class _ExportPageState extends State<ExportPage> {
                     items: const [
                       DropdownMenuItem(
                         value: 'ทั้งหมด',
-                        child: Text('ทั้งหมด'),
+                        child: Text('ทั้งหมด (ยกเว้นรายการที่เสร็จแล้ว)'),
                       ),
                       DropdownMenuItem(
                         value: 'เฉพาะรายการใกล้ครบกำหนด',

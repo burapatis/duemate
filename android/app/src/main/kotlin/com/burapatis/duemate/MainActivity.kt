@@ -1,4 +1,4 @@
-package com.example.duemate
+package com.burapatis.duemate
 
 import io.flutter.embedding.android.FlutterActivity
 
