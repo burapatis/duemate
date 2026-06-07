@@ -76,9 +76,57 @@ class AppTheme {
         shadowColor: Colors.black.withValues(alpha: 0.12),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outline),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+        ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: brightness == Brightness.light
+            ? Colors.white
+            : colorScheme.surfaceContainerHighest,
+        labelStyle: TextStyle(
+          fontFamily: _fontFamily,
+          color: brightness == Brightness.light
+              ? const Color(0xFF1B1B2F)
+              : colorScheme.onSurface,
+          fontWeight: FontWeight.w600,
+        ),
+        hintStyle: TextStyle(
+          fontFamily: _fontFamily,
+          color: colorScheme.onSurfaceVariant,
+        ),
+        helperStyle: TextStyle(
+          fontFamily: _fontFamily,
+          color: brightness == Brightness.light
+              ? const Color(0xFF424242)
+              : colorScheme.onSurfaceVariant,
+        ),
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppBrandColors.primaryBlue;
+          }
+          return null;
+        }),
+      ),
+      listTileTheme: ListTileThemeData(
+        titleTextStyle: TextStyle(
+          fontFamily: _fontFamily,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: brightness == Brightness.light
+              ? const Color(0xFF1B1B2F)
+              : colorScheme.onSurface,
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,

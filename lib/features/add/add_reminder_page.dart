@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_brand_colors.dart';
 import '../home/reminder_item.dart';
 import '../home/reminder_ui.dart';
 import 'reminder_templates.dart';
@@ -298,8 +299,57 @@ class _AddReminderPageState extends State<AddReminderPage> {
     return '$day/$month/$year';
   }
 
+  TextStyle _sectionTitleStyle(BuildContext context) {
+    final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
+    return theme.textTheme.titleMedium!.copyWith(
+      fontWeight: FontWeight.w700,
+      color: isLight
+          ? const Color(0xFF1B1B2F)
+          : theme.colorScheme.onSurface,
+    );
+  }
+
+  TextStyle _chipLabelStyle(BuildContext context, {required bool selected}) {
+    final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
+    return TextStyle(
+      fontFamily: 'Sarabun',
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+      color: selected
+          ? Colors.white
+          : (isLight
+              ? const Color(0xFF1B1B2F)
+              : theme.colorScheme.onSurface),
+    );
+  }
+
+  TextStyle _hintTextStyle(BuildContext context) {
+    return Theme.of(context).textTheme.bodySmall!.copyWith(
+          color: Theme.of(context).colorScheme.onSurface.withValues(
+                alpha: 0.75,
+              ),
+          fontWeight: FontWeight.w500,
+        );
+  }
+
+  InputDecoration _fieldDecoration({
+    required String labelText,
+    String? helperText,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      helperText: helperText,
+      border: const OutlineInputBorder(),
+      filled: true,
+      fillColor: Colors.white,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final fieldLabelColor = Theme.of(context).colorScheme.onSurface;
     return PopScope(
       canPop: !_shouldConfirmBeforePop,
       onPopInvokedWithResult: (didPop, _) {
@@ -337,16 +387,39 @@ class _AddReminderPageState extends State<AddReminderPage> {
                     children: [
                       Text(
                         'เลือกแม่แบบ (ถ้ามี)',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: _sectionTitleStyle(context),
                       ),
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: ReminderTemplate.presets.map((template) {
+                          final selected =
+                              _selectedTemplateId == template.id;
+                          final theme = Theme.of(context);
+                          final isLight =
+                              theme.brightness == Brightness.light;
                           return ChoiceChip(
-                            label: Text('${template.emoji} ${template.label}'),
-                            selected: _selectedTemplateId == template.id,
+                            label: Text(
+                              '${template.emoji} ${template.label}',
+                              style: _chipLabelStyle(
+                                context,
+                                selected: selected,
+                              ),
+                            ),
+                            selected: selected,
+                            showCheckmark: false,
+                            selectedColor: AppBrandColors.primaryBlue,
+                            backgroundColor: isLight
+                                ? const Color(0xFFF3F5F9)
+                                : theme.colorScheme.surfaceContainerHighest,
+                            side: BorderSide(
+                              color: selected
+                                  ? AppBrandColors.primaryBlue
+                                  : (isLight
+                                      ? const Color(0xFFB0BEC5)
+                                      : theme.colorScheme.outline),
+                            ),
                             onSelected: (_) => _applyTemplate(template),
                           );
                         }).toList(),
@@ -365,16 +438,17 @@ class _AddReminderPageState extends State<AddReminderPage> {
                   children: [
                     Text(
                       '📝 ข้อมูลหลัก',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: _sectionTitleStyle(context),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       key: const ValueKey('reminder_title_field'),
                       controller: _titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'ชื่อรายการ',
-                        border: OutlineInputBorder(),
+                      style: TextStyle(
+                        color: fieldLabelColor,
+                        fontWeight: FontWeight.w500,
                       ),
+                      decoration: _fieldDecoration(labelText: 'ชื่อรายการ'),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'กรุณากรอกชื่อรายการ';
@@ -388,16 +462,22 @@ class _AddReminderPageState extends State<AddReminderPage> {
                       initialValue: _categories.contains(_selectedCategory)
                           ? _selectedCategory
                           : ReminderUi.documentCategories.last,
-                      decoration: const InputDecoration(
+                      decoration: _fieldDecoration(
                         labelText: 'หมวดเอกสาร',
-                        helperText: 'เลือกหมวดที่ใกล้เคียงที่สุด — ไม่ต้องพิมพ์เอง',
-                        border: OutlineInputBorder(),
+                        helperText:
+                            'เลือกหมวดที่ใกล้เคียงที่สุด — ไม่ต้องพิมพ์เอง',
                       ),
                       items: _categories
                           .map((category) {
                             return DropdownMenuItem(
                               value: category,
-                              child: Text(ReminderUi.categoryLabel(category)),
+                              child: Text(
+                                ReminderUi.categoryLabel(category),
+                                style: TextStyle(
+                                  color: fieldLabelColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             );
                           })
                           .toList(),
@@ -412,10 +492,21 @@ class _AddReminderPageState extends State<AddReminderPage> {
                     OutlinedButton.icon(
                       onPressed: _pickDueDate,
                       icon: const Icon(Icons.calendar_today),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: fieldLabelColor,
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                      ),
                       label: Text(
                         _dueDate == null
                             ? 'เลือกวันครบกำหนด'
                             : 'วันครบกำหนด: ${_formatDate(_dueDate!)}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -431,14 +522,12 @@ class _AddReminderPageState extends State<AddReminderPage> {
                   children: [
                     Text(
                       '🔔 ตั้งค่าเตือนล่วงหน้า',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: _sectionTitleStyle(context),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'เลือกอย่างน้อย 1 รายการ หากต้องการให้แอปแจ้งเตือน',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                      style: _hintTextStyle(context),
                     ),
                     const SizedBox(height: 8),
                     // เลือกได้หลายค่าเพื่อรองรับการแจ้งเตือนหลายช่วงเวลา
@@ -446,7 +535,13 @@ class _AddReminderPageState extends State<AddReminderPage> {
                       return CheckboxListTile(
                         value: _selectedReminderDays.contains(days),
                         contentPadding: EdgeInsets.zero,
-                        title: Text('$days วัน'),
+                        title: Text(
+                          '$days วัน',
+                          style: TextStyle(
+                            color: fieldLabelColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         controlAffinity: ListTileControlAffinity.leading,
                         onChanged: (isChecked) {
                           setState(() {
@@ -472,7 +567,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
                   children: [
                     Text(
                       '📌 หมายเหตุ',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: _sectionTitleStyle(context),
                     ),
                     const SizedBox(height: ReminderUi.sectionGap),
                     TextFormField(
@@ -480,11 +575,13 @@ class _AddReminderPageState extends State<AddReminderPage> {
                       controller: _noteController,
                       minLines: 3,
                       maxLines: 5,
-                      decoration: const InputDecoration(
-                        labelText: 'รายละเอียดเพิ่มเติม (ถ้ามี)',
-                        border: OutlineInputBorder(),
-                        alignLabelWithHint: true,
+                      style: TextStyle(
+                        color: fieldLabelColor,
+                        fontWeight: FontWeight.w500,
                       ),
+                      decoration: _fieldDecoration(
+                        labelText: 'รายละเอียดเพิ่มเติม (ถ้ามี)',
+                      ).copyWith(alignLabelWithHint: true),
                     ),
                   ],
                 ),

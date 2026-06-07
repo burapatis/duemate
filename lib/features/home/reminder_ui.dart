@@ -31,21 +31,27 @@ class ReminderUi {
         ...documentCategories,
       ];
 
+  /// ไอคอนไม่ซ้ำกันแต่ละหมวด — รายการเก่ายังรองรับหมวดเดิม
   static String categoryEmoji(String category) {
     switch (category) {
+      case 'ทั้งหมด':
+        return '📂';
       case 'พ.ร.บ. รถยนต์':
-      case 'ประกันรถยนต์':
-      case 'ภาษีรถ / ต่อทะเบียน':
       case 'รถ':
         return '🚗';
-      case 'พ.ร.บ. มอเตอร์ไซค์':
-        return '🏍️';
+      case 'ประกันรถยนต์':
+        return '🛡️';
       case 'ใบขับขี่':
       case 'ส่วนตัว':
         return '🪪';
+      case 'ภาษีรถ / ต่อทะเบียน':
+        return '🧾';
+      case 'พ.ร.บ. มอเตอร์ไซค์':
+        return '🏍️';
       case 'ประกันชีวิต / สุขภาพ':
         return '❤️';
       case 'ประกันบ้าน / คอนโด':
+        return '🏢';
       case 'สัญญาเช่าบ้าน':
       case 'บ้าน':
         return '🏠';
@@ -63,8 +69,10 @@ class ReminderUi {
         return '🎫';
       case 'สินค้า/รับประกัน':
         return '📦';
-      default:
+      case 'อื่น ๆ':
         return '📝';
+      default:
+        return '📄';
     }
   }
 
@@ -75,6 +83,27 @@ class ReminderUi {
   static String filterCategoryLabel(String category) {
     if (category == 'ทั้งหมด') return category;
     return categoryLabel(category);
+  }
+
+  /// แปลงหมวดเก่า (รถ, บ้าน ฯลฯ) เป็นหมวดใหม่สำหรับกรอง/ค้นหา
+  static const Map<String, String> legacyCategoryMap = {
+    'รถ': 'พ.ร.บ. รถยนต์',
+    'ส่วนตัว': 'ใบขับขี่',
+    'บ้าน': 'สัญญาเช่าบ้าน',
+    'งาน/ราชการ': 'นัดราชการ',
+    'ครอบครัว': 'เอกสารลูกเรียน',
+    'สินค้า/รับประกัน': 'อื่น ๆ',
+  };
+
+  static String normalizedCategory(String category) {
+    return legacyCategoryMap[category] ?? category;
+  }
+
+  /// ใช้กรองรายการ — รองรับหมวดเก่าที่บันทึกไว้ก่อนหน้านี้
+  static bool categoryMatchesFilter(String itemCategory, String filterCategory) {
+    if (filterCategory == 'ทั้งหมด') return true;
+    if (itemCategory == filterCategory) return true;
+    return normalizedCategory(itemCategory) == filterCategory;
   }
 
   /// หมวดที่ควรตั้งความสำคัญสูงโดยค่าเริ่มต้น

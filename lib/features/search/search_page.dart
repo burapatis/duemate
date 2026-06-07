@@ -12,11 +12,15 @@ class SearchPage extends StatefulWidget {
     required this.services,
     required this.onItemChanged,
     this.embedded = false,
+    this.isActive = true,
   });
 
   final DueMateServices services;
   final Future<void> Function(Object? result) onItemChanged;
   final bool embedded;
+
+  /// เมื่อเป็นแท็บฝังใน Home — โหลดข้อมูลใหม่ทุกครั้งที่สลับมาหน้านี้
+  final bool isActive;
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -34,6 +38,14 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     _reloadItems();
+  }
+
+  @override
+  void didUpdateWidget(SearchPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _reloadItems();
+    }
   }
 
   @override
@@ -242,9 +254,15 @@ List<ReminderItem> filterReminderItems({
   return items.where((item) {
     final matchesName =
         normalizedQuery.isEmpty ||
-        item.title.toLowerCase().contains(normalizedQuery);
-    final matchesCategory =
-        selectedCategory == 'ทั้งหมด' || item.category == selectedCategory;
+        item.title.toLowerCase().contains(normalizedQuery) ||
+        item.category.toLowerCase().contains(normalizedQuery) ||
+        ReminderUi.normalizedCategory(item.category)
+            .toLowerCase()
+            .contains(normalizedQuery);
+    final matchesCategory = ReminderUi.categoryMatchesFilter(
+      item.category,
+      selectedCategory,
+    );
     return matchesName && matchesCategory;
   }).toList();
 }

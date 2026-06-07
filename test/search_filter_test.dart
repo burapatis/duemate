@@ -67,4 +67,26 @@ void main() {
     expect(result.length, 1);
     expect(result.first.title, 'พ.ร.บ. รถยนต์');
   });
+
+  test('filterReminderItems รองรับหมวดเก่าเมื่อกรองด้วยหมวดใหม่', () {
+    final result = filterReminderItems(
+      items: items,
+      query: '',
+      selectedCategory: 'พ.ร.บ. รถยนต์',
+    );
+
+    expect(result.length, 1);
+    expect(result.first.title, 'พ.ร.บ. รถยนต์');
+  });
+
+  test('filterReminderItems ค้นหาด้วยชื่อหมวดใหม่ของรายการเก่า', () {
+    final result = filterReminderItems(
+      items: items,
+      query: 'ใบขับขี่',
+      selectedCategory: 'ทั้งหมด',
+    );
+
+    expect(result.length, 1);
+    expect(result.first.category, 'ส่วนตัว');
+  });
 }

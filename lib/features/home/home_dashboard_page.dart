@@ -105,8 +105,10 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   List<ReminderItem> _visibleAndSortedItems() {
     final filtered = _upcomingDocuments.where((item) {
       if (_hideCompleted && item.isCompleted) return false;
-      if (_selectedCategory != 'ทั้งหมด' &&
-          item.category != _selectedCategory) {
+      if (!ReminderUi.categoryMatchesFilter(
+        item.category,
+        _selectedCategory,
+      )) {
         return false;
       }
       return true;
@@ -137,52 +139,102 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor: AppBrandColors.sheetBackground,
       builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        final isLight = theme.brightness == Brightness.light;
+        final titleStyle = theme.textTheme.titleMedium!.copyWith(
+          fontWeight: FontWeight.w700,
+          color: isLight
+              ? const Color(0xFF1B1B2F)
+              : theme.colorScheme.onSurface,
+        );
+        final chipLabelStyle = TextStyle(
+          fontFamily: 'Sarabun',
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: isLight
+              ? const Color(0xFF1B1B2F)
+              : theme.colorScheme.onSurface,
+        );
+        final switchTitleStyle = theme.textTheme.titleSmall!.copyWith(
+          fontWeight: FontWeight.w600,
+          color: isLight
+              ? const Color(0xFF1B1B2F)
+              : theme.colorScheme.onSurface,
+        );
+        final switchSubtitleStyle = theme.textTheme.bodySmall!.copyWith(
+          fontWeight: FontWeight.w500,
+          color: isLight
+              ? const Color(0xFF424242)
+              : theme.colorScheme.onSurface.withValues(alpha: 0.8),
+        );
+
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'กรองรายการ',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _filterCategories.map((category) {
-                      final selected = _selectedCategory == category;
-                      return FilterChip(
-                        label: Text(ReminderUi.filterCategoryLabel(category)),
-                        selected: selected,
-                        onSelected: (_) {
-                          setState(() {
-                            _selectedCategory = category;
-                          });
-                          setSheetState(() {});
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('ซ่อนรายการที่เสร็จแล้ว'),
-                    subtitle: const Text(
-                      'ปิดไว้เพื่อให้เห็นรายการที่เสร็จแล้วตลอด — ข้อมูลไม่ถูกลบ',
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('กรองรายการ', style: titleStyle),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _filterCategories.map((category) {
+                        final selected = _selectedCategory == category;
+                        return FilterChip(
+                          label: Text(
+                            ReminderUi.filterCategoryLabel(category),
+                            style: selected
+                                ? chipLabelStyle.copyWith(color: Colors.white)
+                                : chipLabelStyle,
+                          ),
+                          selected: selected,
+                          showCheckmark: false,
+                          selectedColor: AppBrandColors.primaryBlue,
+                          backgroundColor: isLight
+                              ? const Color(0xFFF3F5F9)
+                              : theme.colorScheme.surfaceContainerHighest,
+                          side: BorderSide(
+                            color: selected
+                                ? AppBrandColors.primaryBlue
+                                : (isLight
+                                    ? const Color(0xFFB0BEC5)
+                                    : theme.colorScheme.outline),
+                          ),
+                          onSelected: (_) {
+                            setState(() {
+                              _selectedCategory = category;
+                            });
+                            setSheetState(() {});
+                          },
+                        );
+                      }).toList(),
                     ),
-                    value: _hideCompleted,
-                    onChanged: (value) {
-                      setState(() {
-                        _hideCompleted = value;
-                      });
-                      setSheetState(() {});
-                    },
-                  ),
-                ],
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'ซ่อนรายการที่เสร็จแล้ว',
+                        style: switchTitleStyle,
+                      ),
+                      subtitle: Text(
+                        'ปิดไว้เพื่อให้เห็นรายการที่เสร็จแล้วตลอด — ข้อมูลไม่ถูกลบ',
+                        style: switchSubtitleStyle,
+                      ),
+                      value: _hideCompleted,
+                      onChanged: (value) {
+                        setState(() {
+                          _hideCompleted = value;
+                        });
+                        setSheetState(() {});
+                      },
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -624,6 +676,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           _buildHomeTab(),
           SearchPage(
             embedded: true,
+            isActive: _navIndex == 1,
             services: widget.services,
             onItemChanged: _handleNavigationResult,
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/due_mate_services.dart';
+import '../../theme/app_brand_colors.dart';
 import '../home/reminder_ui.dart';
 import '../onboarding/terms_of_use_page.dart';
 import '../onboarding/usage_guide_page.dart';
@@ -207,11 +208,33 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: ReminderUi.sectionGap),
           Card(
+            color: Theme.of(context).brightness == Brightness.light
+                ? const Color(0xFFEEF3FB)
+                : Theme.of(context).colorScheme.surfaceContainerHigh,
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.06),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: AppBrandColors.primaryBlue.withValues(alpha: 0.14),
+              ),
+            ),
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.article_outlined),
-                  title: const Text('ข้อตกลงและเงื่อนไขการใช้งาน'),
+                  leading: Icon(
+                    Icons.article_outlined,
+                    color: AppBrandColors.primaryBlue,
+                  ),
+                  title: Text(
+                    'ข้อตกลงและเงื่อนไขการใช้งาน',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).brightness == Brightness.light
+                              ? const Color(0xFF1B1B2F)
+                              : Theme.of(context).colorScheme.onSurface,
+                        ),
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.of(context).push(
@@ -226,8 +249,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.menu_book_outlined),
-                  title: const Text('วิธีใช้งานอย่างง่าย'),
+                  leading: Icon(
+                    Icons.menu_book_outlined,
+                    color: AppBrandColors.primaryBlue,
+                  ),
+                  title: Text(
+                    'วิธีใช้งานอย่างง่าย',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).brightness == Brightness.light
+                              ? const Color(0xFF1B1B2F)
+                              : Theme.of(context).colorScheme.onSurface,
+                        ),
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.of(context).push(
