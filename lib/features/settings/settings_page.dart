@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../services/due_mate_services.dart';
 import '../home/reminder_ui.dart';
+import '../onboarding/terms_of_use_page.dart';
+import '../onboarding/usage_guide_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
@@ -201,6 +203,44 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: ReminderUi.sectionGap),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.article_outlined),
+                  title: const Text('ข้อตกลงและเงื่อนไขการใช้งาน'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => TermsOfUsePage(
+                          isOnboarding: false,
+                          onAccepted: () async {},
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.menu_book_outlined),
+                  title: const Text('วิธีใช้งานอย่างง่าย'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => UsageGuidePage(
+                          isOnboarding: false,
+                          onCompleted: () async {},
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
           const SizedBox(height: ReminderUi.sectionGap),

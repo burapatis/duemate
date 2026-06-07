@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'features/home/home_dashboard_page.dart';
+import 'features/onboarding/app_launch_gate.dart';
 import 'services/due_mate_services.dart';
 import 'theme/app_theme.dart';
 
@@ -45,7 +45,7 @@ class _DueMateAppState extends State<DueMateApp> {
       themeMode: _themeMode,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      home: HomeDashboardPage(
+      home: AppLaunchGate(
         services: widget.services,
         onThemeModeChanged: _onThemeModeChanged,
       ),

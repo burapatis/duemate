@@ -5,7 +5,10 @@ import 'package:duemate/app.dart';
 
 void main() {
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({
+      'duemate_accepted_terms': true,
+      'duemate_completed_usage_guide': true,
+    });
   });
 
   testWidgets('แสดงหน้าแดชบอร์ดภาษาไทย', (WidgetTester tester) async {

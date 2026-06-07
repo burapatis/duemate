@@ -22,6 +22,8 @@ void main() {
 
     expect(find.text('ตั้งค่าและความเป็นส่วนตัว'), findsOneWidget);
     expect(find.text('รูปแบบหน้าจอ'), findsOneWidget);
+    expect(find.text('ข้อตกลงและเงื่อนไขการใช้งาน'), findsOneWidget);
+    expect(find.text('วิธีใช้งานอย่างง่าย'), findsOneWidget);
 
     await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
