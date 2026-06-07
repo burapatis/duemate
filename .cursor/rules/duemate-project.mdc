@@ -1,0 +1,37 @@
+---
+description: DueMate project rules for Flutter app development
+alwaysApply: true
+---
+
+# DueMate Project Rules
+
+You are helping develop DueMate, a local-first Flutter app for Thai users to record and remind document due dates.
+
+Before making changes:
+1. Summarize the root cause or goal.
+2. List files you plan to change.
+3. List files/areas you will not touch.
+4. Explain how to test after changes.
+5. Wait for the user to type “อนุมัติ” before editing files.
+
+Hard constraints:
+- Do not rewrite the whole project.
+- Do not change architecture/state management unless explicitly approved.
+- Do not add packages unless necessary and approved.
+- Do not change Android/iOS/macOS native files unless necessary and approved.
+- Do not break existing working features.
+- Keep Thai UI copy simple and user-friendly.
+- Avoid user-facing words like mock, debug, placeholder, prototype, MVP.
+- Preserve local-first behavior: no login, no backend, main data stored on device.
+- Treat DueMate as a reminder/logging helper, not legal, financial, official, insurance, or medical service.
+
+Current stable baseline:
+- Latest completed version: DueMate v0.7.1 — Beta Safety Fixes.
+- Core features: add/edit/delete reminders, local persistence, search/filter/detail, local notifications, CSV/PDF export-share, reset, beta test docs.
+- Known warnings are accepted unless explicitly asked to fix:
+  - shared_preferences_android / share_plus Kotlin Gradle Plugin warning
+  - printing Swift Package Manager warning
+  - package newer versions available
+
+For full project context, read:
+docs/CURSOR_DUEMATE_MASTER_CONTEXT.md
