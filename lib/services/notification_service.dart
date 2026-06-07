@@ -26,6 +26,14 @@ class NotificationService {
   static const _androidChannelName = 'DueMate';
   static const _androidChannelDescription = 'แจ้งเตือนจาก DueMate';
 
+  static const _darwinNotificationDetails = DarwinNotificationDetails(
+    presentAlert: true,
+    presentBadge: true,
+    presentSound: true,
+    presentBanner: true,
+    presentList: true,
+  );
+
   static const _notificationDetails = NotificationDetails(
     android: AndroidNotificationDetails(
       _androidChannelId,
@@ -34,8 +42,8 @@ class NotificationService {
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
     ),
-    iOS: DarwinNotificationDetails(),
-    macOS: DarwinNotificationDetails(),
+    iOS: _darwinNotificationDetails,
+    macOS: _darwinNotificationDetails,
   );
 
   final FlutterLocalNotificationsPlugin _plugin =
@@ -131,6 +139,11 @@ class NotificationService {
         requestAlertPermission: false,
         requestBadgePermission: false,
         requestSoundPermission: false,
+        defaultPresentAlert: true,
+        defaultPresentBadge: true,
+        defaultPresentSound: true,
+        defaultPresentBanner: true,
+        defaultPresentList: true,
       );
 
       const initSettings = InitializationSettings(
@@ -148,33 +161,74 @@ class NotificationService {
     }
   }
 
-  /// ขอ permission แจ้งเตือนตาม platform ที่รองรับ
-  Future<void> requestPermissions() async {
+  /// ตรวจว่าเครื่องอนุญาตให้แสดงแจ้งเตือนได้หรือไม่
+  Future<bool> hasNotificationPermission() async {
     try {
-      await _plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        final options = await _plugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>()
+            ?.checkPermissions();
+        return options?.isAlertEnabled ?? false;
+      }
 
-      await _plugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
+      if (defaultTargetPlatform == TargetPlatform.macOS) {
+        final options = await _plugin
+            .resolvePlatformSpecificImplementation<
+                MacOSFlutterLocalNotificationsPlugin>()
+            ?.checkPermissions();
+        return options?.isAlertEnabled ?? false;
+      }
 
-      await _plugin
-          .resolvePlatformSpecificImplementation<
-              MacOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        final enabled = await _plugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.areNotificationsEnabled();
+        return enabled ?? true;
+      }
+
+      return true;
     } catch (_) {
-      // ผู้ใช้ปฏิเสธหรือ platform ไม่รองรับ — ไม่ throw ต่อ
+      return false;
+    }
+  }
+
+  /// ขอ permission แจ้งเตือน — คืน true ถ้าเครื่องอนุญาตแล้ว
+  Future<bool> requestPermissions() async {
+    try {
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        await _plugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.requestNotificationsPermission();
+      }
+
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        await _plugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>()
+            ?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            );
+      }
+
+      if (defaultTargetPlatform == TargetPlatform.macOS) {
+        await _plugin
+            .resolvePlatformSpecificImplementation<
+                MacOSFlutterLocalNotificationsPlugin>()
+            ?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            );
+      }
+
+      return hasNotificationPermission();
+    } catch (_) {
+      return false;
     }
   }
 
@@ -183,6 +237,9 @@ class NotificationService {
     try {
       final ready = await _ensureReady();
       if (!ready) return false;
+
+      final permitted = await requestPermissions();
+      if (!permitted) return false;
 
       await _plugin.show(
         id: _testNotificationId,

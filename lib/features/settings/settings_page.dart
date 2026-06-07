@@ -77,7 +77,21 @@ class _SettingsPageState extends State<SettingsPage> {
         throw StateError('initialize failed');
       }
 
-      await _services.notificationService.requestPermissions();
+      final permitted =
+          await _services.notificationService.requestPermissions();
+      if (!permitted) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'ยังไม่ได้อนุญาตแจ้งเตือน — ไปที่ ตั้งค่า iPhone → DueMate → '
+              'การแจ้งเตือน แล้วเปิด "อนุญาต"',
+            ),
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
 
       final shown = await _services.notificationService.showTestNotification();
       if (!shown) {
@@ -86,7 +100,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ส่งการแจ้งเตือนตัวอย่างแล้ว')),
+        const SnackBar(
+          content: Text(
+            'ส่งการแจ้งเตือนตัวอย่างแล้ว — ดูแบนเนอร์ด้านบนหน้าจอ',
+          ),
+        ),
       );
     } catch (_) {
       if (!mounted) return;
